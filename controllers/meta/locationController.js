@@ -55,7 +55,7 @@ export const createVehicle = async (req, res) => {
   }
 };
 
-// Get all vehicles
+// Get all vehicles from drivesta
 export const getAllVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find();
@@ -98,4 +98,3 @@ export const deleteVehicle = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
