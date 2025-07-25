@@ -1,5 +1,5 @@
 import express from "express";
-import { uploadDocument } from "../../controllers/meta/commonController.js";
+import { deleteMetaData, getMetaDataByType, updateMetaData, uploadDocument, upsertMetaData } from "../../controllers/meta/commonController.js";
 import path from "path";
 
 const router = express.Router();
@@ -34,6 +34,11 @@ router.post("/upload", uploadDocument.array("documents", 10), (req, res) => {
     });
   }
 });
+
+router.post('/meta', upsertMetaData);              
+router.get('/meta/:type', getMetaDataByType);
+router.put('/meta', updateMetaData);   
+router.delete('/meta', deleteMetaData);    
 
 
 export default router;

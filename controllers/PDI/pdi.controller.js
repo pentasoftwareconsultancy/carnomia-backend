@@ -1,6 +1,7 @@
-
 import getCityPrefix from "../../utils/getCityPrefix.js";
 import PDIRequest from "../../models/PDIRequest.model.js";
+import User from "../../models/User.model.js";
+import Vehicle from "../../models/Vehicle.model.js";
 
 export const createPDIRequest = async (req, res) => {
   try {
@@ -16,18 +17,21 @@ export const createPDIRequest = async (req, res) => {
       notes,
     } = req.body;
 
-    // Fetch customer details
+    console.log("Fetching user and vehicle...");
     const user = await User.findById(customer);
     if (!user) return res.status(404).json({ error: "Customer not found" });
 
-    // Fetch vehicle details
     const vehicle = await Vehicle.findOne({ brand, model, variant });
-    if (!vehicle) return res.status(404).json({ error: "Vehicle not found" });
+    if (!vehicle) {
+      return res
+        .status(404)
+        .json({ message: "Vehicle not found for this customer" });
+    }
 
     // Generate booking ID
     const bookingId = getCityPrefix();
 
-    const newRequest = new Request({
+    const newRequest = new PDIRequest({
       customer,
       customerName: user.name,
       customerMobile: user.mobile,
@@ -49,20 +53,49 @@ export const createPDIRequest = async (req, res) => {
     });
 
     await newRequest.save();
-    res.status(201).json({ message: "Request created", bookingId });
+
+    res.status(201).json({
+      message: "PDI Request created successfully",
+      request: newRequest,
+      vehicleImage: vehicle.imageUrl, 
+    });
   } catch (error) {
-    console.error("Create request error:", error);
-    res.status(500).json({ error: "Server error" }); 
+    console.error("Create request error:", error.message, error.stack);
+    res
+      .status(500)
+      .json({ message: "Something went wrong", error: error.message });
   }
 };
 
 export const updatePDIInspection = async (req, res) => {
   try {
+    const { id } = req.params; 
+    const updateData = { ...req.body };
+
+    
+    if (req.files?.imagesUrl) {
+      updateData.imagesUrl = req.files.imagesUrl.map((file) => file.path);
+    }
+
+    const updatedPDIRequest = await PDIRequest.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedPDIRequest) {
+      return res.status(404).json({ message: "PDI Request not found" });
+    }
+
+    res.status(200).json({
+      message: "PDI Request updated successfully",
+      data: updatedPDIRequest,
+    });
   } catch (error) {
     console.error("Update PDI Inspection Error:", error);
     res.status(500).json({ error: "Server error" });
   }
-}
+};
 
 export const getAllPDIRequests = async (req, res) => {
   try {
@@ -91,7 +124,7 @@ export const assignEngineer = async (req, res) => {
     const { name, mobile } = req.body;
 
     // Find engineer
-    const engineer = await Employee.findOne({ name, mobile, role: "engineer" });
+    const engineer = await User.findOne({ name, mobile, role: "engineer" });
 
     if (!engineer) {
       return res.status(404).json({ message: "Engineer not found" });
@@ -109,6 +142,8 @@ export const assignEngineer = async (req, res) => {
       },
       { new: true }
     );
+
+    console.log("updated request" + updatedRequest);
 
     if (!updatedRequest) {
       return res

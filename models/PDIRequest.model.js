@@ -7,7 +7,7 @@ const requestSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    customerName: { type: String }, 
+    customerName: { type: String },
     customerMobile: { type: String },
 
     brand: { type: String, required: true },
@@ -39,9 +39,14 @@ const requestSchema = new mongoose.Schema(
       default: "Pending",
     },
 
+    imagesUrl: [{ type: String }],
+
     engineer: {
       name: { type: String },
       number: { type: String },
+    
+     
+
     },
   },
   { timestamps: true }

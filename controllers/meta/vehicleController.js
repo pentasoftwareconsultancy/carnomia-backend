@@ -1,4 +1,5 @@
 import Vehicle from "../../models/Vehicle.model.js";
+import path from "path";
 
 // Add new vehicle
 export const createVehicle = async (req, res) => {
@@ -15,8 +16,11 @@ export const createVehicle = async (req, res) => {
       NCAP,
     } = req.body;
 
-    //uploaded image URL from Cloudinary via Multer
-    const imageUrl = req.file?.path;
+    const imageUrl = req.file
+      ? `${req.protocol}://${req.get("host")}/${path
+          .relative(process.cwd(), req.file.path)
+          .replace(/\\/g, "/")}`
+      : null;
 
     if (!imageUrl) {
       return res.status(400).json({ message: "Image upload is required." });
@@ -98,4 +102,3 @@ export const deleteVehicle = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-

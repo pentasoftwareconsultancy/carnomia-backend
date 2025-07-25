@@ -4,8 +4,9 @@ import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user/user.route.js";
 import pdiRoutes from "./routes/pdi/pdi.routes.js";
 import commonRoutes from "./routes/meta/common.routes.js";
+import metaRoutes from "./routes/meta/meta.routes.js";
+import lookupRoutes from "./routes/meta/lookupRoutes.js";
 import path from "path";
-
 
 const app = express();
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
@@ -20,18 +21,8 @@ app.use(cookieParser());
 app.use("/api/user", userRoutes);
 app.use("/api/pdi", pdiRoutes);
 app.use("/api/common", commonRoutes);
-
-// app.use("/api/user", userRoutes);
-// app.use("/api/pdi", vehiclePDI);
-
-//Superadmin Routes
-// app.use("/api/superadmin", SuperAdminRoutes);
-// app.use("/api/superadmin", signup);
-// app.use("/api/addvehicles", vehicleRoutes);
-
-// Admin routes
-// app.use("/api/admin", assignEngineerRoutes);
-// app.use("/api/admin", pdiRequestRoutes);
+app.use("/api/meta", metaRoutes);
+app.use("/api/lookups", lookupRoutes);
 
 app.get("/", (req, res) => {
   res.send(" API is running...");

@@ -1,18 +1,28 @@
 import express from "express";
-import { createPDIRequest, assignEngineer, getAllPDIRequests, updatePDIInspection } from "../../controllers/PDI/pdi.controller.js";
+import {
+  createPDIRequest,
+  assignEngineer,
+  getAllPDIRequests,
+  updatePDIInspection,
+} from "../../controllers/PDI/pdi.controller.js";
 
 const router = express.Router();
 
 router.post("/create", createPDIRequest);
-router.post("/update-inspection/:pdiId", updatePDIInspection);
-router.post("/update-status/:pdiId", update);
+// router.patch(
+//   "/update/:id", 
+//   upload.fields([
+//     { name: "singleImage", maxCount: 1 },
+//     { name: "multiImages", maxCount: 10 },
+//   ]),
+//   updatePDIInspection
+// );
 router.get("/all-request", getAllPDIRequests);
 router.put("/assign/:bookingId", assignEngineer);
 
 export default router;
 
-
-//continue inspection form 
+//continue inspection form
 
 //check all api and add validation for each api
 
