@@ -5,7 +5,6 @@ import {
   getVehicleById,
   deleteVehicle,
 } from "../../controllers/meta/vehicleController.js";
-import { uploadDocument } from "../../controllers/meta/commonController.js";
 
 const router = express.Router();
 
@@ -13,7 +12,8 @@ const router = express.Router();
 router.post(
   "/vehicle",
 
-  uploadDocument.single("image"),
+  // uploadDocument.single("image"),
+  
   createVehicle
 );
 router.get("/getallvehicle", getAllVehicles);

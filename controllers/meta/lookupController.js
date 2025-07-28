@@ -2,24 +2,39 @@ import Lookup from "../../models/Lookup.js";
 
 //all lookups  filtered by type
 export const getLookups = async (req, res) => {
-  try {
-    const query = {};
-    if (req.query.type) query.type = req.query.type.toLowerCase();
-    if (req.query.isActive !== undefined) {
-      query.isActive = req.query.isActive === "true";
+      try {
+      const type  = req.query.type ? req.query.type.toLowerCase() : null;
+
+      const types = type
+        ? type.split(',').map((t) => t.trim().toLowerCase())
+        : [];
+
+     
+      const query = {};
+      if (types.length > 0) {
+        query.type = { $in: types };
+      }
+     
+      const lookups = await Lookup.find(query).sort({
+        order: 1,
+        label: 1,
+        value: 1,
+      });
+      
+      const results = lookups.reduce((acc, item) => {
+        const key = item.type;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      }, {});
+
+      res.status(200).json(results);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
     }
+  };
 
-    const lookups = await Lookup.find(query).sort({
-      order: 1,
-      label: 1,
-      value: 1,
-    });
-
-    res.status(200).json(lookups);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+// };
 
 // GET lookup by ID
 export const getLookupById = async (req, res) => {

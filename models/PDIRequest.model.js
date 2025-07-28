@@ -5,7 +5,7 @@ const requestSchema = new mongoose.Schema(
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      // required: true,
     },
     customerName: { type: String },
     customerMobile: { type: String },

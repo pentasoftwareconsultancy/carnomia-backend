@@ -6,7 +6,6 @@ import Vehicle from "../../models/Vehicle.model.js";
 export const createPDIRequest = async (req, res) => {
   try {
     const {
-      customer,
       brand,
       model,
       variant,
@@ -17,8 +16,10 @@ export const createPDIRequest = async (req, res) => {
       notes,
     } = req.body;
 
-    console.log("Fetching user and vehicle...");
-    const user = await User.findById(customer);
+    
+    const user = await User.findById(req.user.id);
+
+     console.log("user from id ", user);
     if (!user) return res.status(404).json({ error: "Customer not found" });
 
     const vehicle = await Vehicle.findOne({ brand, model, variant });
@@ -32,7 +33,7 @@ export const createPDIRequest = async (req, res) => {
     const bookingId = getCityPrefix();
 
     const newRequest = new PDIRequest({
-      customer,
+    
       customerName: user.name,
       customerMobile: user.mobile,
 

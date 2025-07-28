@@ -6,15 +6,15 @@ import bcrypt from "bcryptjs";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, mobile, city, password } = req.body;
+    let { name, email, mobile, city, password, role } = req.body;
 
     // Detect role by email
-    let role = "customer";
-    if (email.endsWith(".admin@drivesta.com")) {
-      role = "admin";
-    } else if (email.endsWith(".engineer@drivesta.com")) {
-      role = "engineer";
-    }
+    // let role = "customer";
+    // if (email.endsWith(".admin@drivesta.com")) {
+    //   role = "admin";
+    // } else if (email.endsWith(".engineer@drivesta.com")) {
+    //   role = "engineer";
+    // }
 
     // Check for duplicate email
     const existing = await User.findOne({ email });
@@ -24,6 +24,8 @@ export const registerUser = async (req, res) => {
 
     // Handle password for Admin & Engineer only
     let hashedPassword = null;
+    // role = 'admin'
+    // password = "123456"
     if (role !== "customer") {
       if (!password) {
         return res
@@ -42,16 +44,59 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
     });
 
-    await newUser.save();
-    res.status(201).json({ message: `${role} registered successfully` });
+    const user = await newUser.save();
+    // console.log("User registered:", user);
+    res.status(201).json({id:user._id, message: `${role} registered successfully` });
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ error: "Server error", detail: error.message });
   }
 };
 
+
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, mobile, city, password, role } = req.body;
+
+    // Find the user to update
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Check for email conflict (if email is being updated)
+    if (email && email !== user.email) {
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return res.status(400).json({ error: "Email already in use" });
+      }
+    }
+
+    // Optional: Update password (for Admin and Engineer only)
+    if (role !== "customer" && password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    // Update fields
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.mobile = mobile || user.mobile;
+    user.city = city || user.city;
+    user.role = role || user.role;
+
+    await user.save();
+
+    res.json({ message: `${user.role} updated successfully` });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({ error: "Server error", detail: error.message });
+  }
+};
+
+
 export const loginUser = async (req, res) => {
-  const { email, password, mobile } = req.body;
+  const { email, password, mobile, otp } = req.body;
 
   console.log("Login attempt:", { email, mobile, password });
 
@@ -65,14 +110,14 @@ export const loginUser = async (req, res) => {
           .json({ message: "Please login with mobile number and OTP" });
       }
 
-      const prefix = email.split("@")[0];
-      const roleGuess = prefix.split(".").pop();
-      const validRoles = ["engineer", "admin", "superadmin"];
-      if (!validRoles.includes(roleGuess)) {
-        return res
-          .status(400)
-          .json({ message: "Please login with mobile number and OTP" });
-      }
+      // const prefix = email.split("@")[0];
+      // const roleGuess = prefix.split(".").pop();
+      // const validRoles = ["engineer", "admin", "superadmin"];
+      // if (!validRoles.includes(roleGuess)) {
+      //   return res
+      //     .status(400)
+      //     .json({ message: "Please login with mobile number and OTP" });
+      // }
 
       const user = await User.findOne({ email }).select("+password");
 
@@ -112,6 +157,11 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    // verify OTP 
+    if(otp) {
+      console.log(otp)
+      return await verifyOtp(req, res)
+    }
     // Case 2: Customer Login via Mobile OTP
     if (mobile) {
       if (!/^\d{10}$/.test(mobile)) {
@@ -163,6 +213,64 @@ export const loginUser = async (req, res) => {
   }
 };
 
+
+export const verifyOtp = async (req, res) => {
+    
+  return new Promise(async (resolved,reject)=>{
+        
+      const { mobile, otp } = req.body;
+
+      console.log("Verify OTP request:", { mobile, otp });
+
+      try {
+      let user;
+
+      if (mobile.includes("@")) {
+        user = await User.findOne({ email: mobile });
+      } else {
+        user = await User.findOne({ mobile: mobile });
+      }
+
+      console.log("user found:", user);
+
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      if (!user.otp || user.otp !== otp)
+        resolved(res.status(400).json({ message: "Invalid OTP" }));
+
+      if (!user.otpExpires || user.otpExpires < new Date())
+        resolved(res.status(400).json({ message: "OTP expired" }));
+
+      // Clear OTP
+      user.otp = null;
+      user.otpExpires = null;
+      await user.save();
+
+      const token = generateToken(user);
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
+      resolved(res.status(200).json({
+        message: "OTP verified successfully",
+        token,
+        user: {
+          userId: user._id,
+          email: user.email || null,
+          mobile: user.mobile,
+          role: user.role,
+        },
+      }));
+      } catch (err) {
+      console.error("Verify OTP error:", err);
+        resolved(res.status(500).json({ message: "Server error" }));
+      }
+      
+    })
+  };
+
 export const logoutUser = (req, res) => {
   try {
     res.clearCookie("token");
@@ -187,5 +295,25 @@ export const getusers = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+export const getUsersByRoles = async (req, res) => {
+  try {
+    const { roles } = req.query;
+
+    if (!roles) {
+      return res.status(400).json({ error: "Query param 'roles' is required" });
+    }
+
+    const roleArray = roles.split(",").map((r) => r.trim());
+
+    const users = await User.find({ role: { $in: roleArray } });
+
+    res.json({ users });
+  } catch (error) {
+    console.error("Get users by roles error:", error);
+    res.status(500).json({ error: "Server error", detail: error.message });
   }
 };

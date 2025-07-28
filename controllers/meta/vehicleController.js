@@ -14,13 +14,8 @@ export const createVehicle = async (req, res) => {
       Airbags,
       Mileage,
       NCAP,
+      imageUrl,
     } = req.body;
-
-    const imageUrl = req.file
-      ? `${req.protocol}://${req.get("host")}/${path
-          .relative(process.cwd(), req.file.path)
-          .replace(/\\/g, "/")}`
-      : null;
 
     if (!imageUrl) {
       return res.status(400).json({ message: "Image upload is required." });
@@ -60,7 +55,7 @@ export const createVehicle = async (req, res) => {
 };
 
 // Get all vehicles
-export const getAllVehicles = async (req, res) => {
+export const  getAllVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find();
     res.json({

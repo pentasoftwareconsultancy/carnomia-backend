@@ -5,10 +5,11 @@ import {
   getAllPDIRequests,
   updatePDIInspection,
 } from "../../controllers/PDI/pdi.controller.js";
+import authMiddlewares from "../../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/create", createPDIRequest);
+router.post("/create", authMiddlewares, createPDIRequest);
 // router.patch(
 //   "/update/:id", 
 //   upload.fields([
