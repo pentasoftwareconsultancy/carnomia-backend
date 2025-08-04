@@ -35,8 +35,6 @@ app.use(express.json());
 // for store token in cookie
 const token = app.use(cookieParser());
 
-console.log("Current Token in app.js:", token);
-
 //Customer Routes
 app.use("/api/user", userRoutes);
 app.use("/api/pdi", pdiRoutes);

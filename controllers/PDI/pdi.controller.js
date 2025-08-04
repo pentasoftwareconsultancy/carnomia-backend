@@ -102,6 +102,8 @@ export const getAllPDIRequests = async (req, res) => {
   try {
     const requests = await PDIRequest.find();
 
+    console.log("All PDI Requests:", requests);
+
     res.status(200).json({
       success: true,
       total: requests.length,

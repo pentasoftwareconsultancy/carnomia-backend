@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    designation: {
+      type: String,
+      default: null,
+    },
     password: {
       type: String,
       select: false,

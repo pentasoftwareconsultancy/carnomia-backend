@@ -18,7 +18,7 @@ router.post("/create", authMiddlewares, createPDIRequest);
 //   ]),
 //   updatePDIInspection
 // );
-router.get("/all-request", getAllPDIRequests);
+router.get("/request", getAllPDIRequests);
 router.put("/assign/:bookingId", assignEngineer);
 
 export default router;

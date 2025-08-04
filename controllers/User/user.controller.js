@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 
 export const registerUser = async (req, res) => {
   try {
-    let { name, email, mobile, city, password, role } = req.body;
+    let { name, email, mobile, city, designation, password, role } = req.body;
 
     // Detect role by email
     // let role = "customer";
@@ -41,6 +41,7 @@ export const registerUser = async (req, res) => {
       mobile,
       city,
       role,
+      designation,
       password: hashedPassword,
     });
 
@@ -57,43 +58,46 @@ export const registerUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, mobile, city, password, role } = req.body;
+    const { name, email, mobile, city, designation, password, role } = req.body;
 
-    // Find the user to update
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    // Check for email conflict (if email is being updated)
+    // Check for duplicate email
     if (email && email !== user.email) {
       const existingEmail = await User.findOne({ email });
       if (existingEmail) {
-        return res.status(400).json({ error: "Email already in use" });
+        return res.status(400).json({ success: false, error: "Email already in use" });
       }
     }
 
-    // Optional: Update password (for Admin and Engineer only)
-    if (role !== "customer" && password) {
+    // Update password only if provided and not blank
+    if (role !== "customer" && password && password.trim() !== "") {
       user.password = await bcrypt.hash(password, 10);
     }
 
-    // Update fields
+    // Update other fields
     user.name = name || user.name;
     user.email = email || user.email;
     user.mobile = mobile || user.mobile;
     user.city = city || user.city;
+    user.designation = designation || user.designation;
     user.role = role || user.role;
 
     await user.save();
 
-    res.json({ message: `${user.role} updated successfully` });
+    res.status(200).json({
+      success: true,
+      message: `${user.role} updated successfully`,
+      user,
+    });
   } catch (error) {
     console.error("Update error:", error);
-    res.status(500).json({ error: "Server error", detail: error.message });
+    res.status(500).json({ success: false, error: "Server error", detail: error.message });
   }
 };
-
 
 export const loginUser = async (req, res) => {
   const { email, password, mobile, otp } = req.body;
@@ -301,19 +305,31 @@ export const getusers = async (req, res) => {
 
 export const getUsersByRoles = async (req, res) => {
   try {
-    const { roles } = req.query;
+    const { role } = req.params;
+    const users = await User.find({ role});
 
-    if (!roles) {
-      return res.status(400).json({ error: "Query param 'roles' is required" });
+    if (!users || users.length === 0) {
+      return res.status(404).json({ success: false, message: "No users found" });
     }
-
-    const roleArray = roles.split(",").map((r) => r.trim());
-
-    const users = await User.find({ role: { $in: roleArray } });
-
-    res.json({ users });
+    res.status(200).json(users);
   } catch (error) {
-    console.error("Get users by roles error:", error);
+    console.error("Get users by role error:", error);
+    res.status(500).json({ success: false, message: "Server error", detail: error.message });
+  }
+
+};
+
+//delete user
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Delete user error:", error);
     res.status(500).json({ error: "Server error", detail: error.message });
   }
 };
