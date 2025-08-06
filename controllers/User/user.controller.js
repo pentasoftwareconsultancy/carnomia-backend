@@ -166,6 +166,9 @@ export const loginUser = async (req, res) => {
       console.log(otp)
       return await verifyOtp(req, res)
     }
+
+    console.log("Mobile login attempt:", { mobile });
+    
     // Case 2: Customer Login via Mobile OTP
     if (mobile) {
       if (!/^\d{10}$/.test(mobile)) {
@@ -307,6 +310,9 @@ export const getUsersByRoles = async (req, res) => {
   try {
     const { role } = req.params;
     const users = await User.find({ role});
+    
+    console.log("Users found:", users);
+    
 
     if (!users || users.length === 0) {
       return res.status(404).json({ success: false, message: "No users found" });

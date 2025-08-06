@@ -16,10 +16,9 @@ export const createPDIRequest = async (req, res) => {
       notes,
     } = req.body;
 
-    
     const user = await User.findById(req.user.id);
 
-     console.log("user from id ", user);
+    console.log("user from id ", user);
     if (!user) return res.status(404).json({ error: "Customer not found" });
 
     const vehicle = await Vehicle.findOne({ brand, model, variant });
@@ -33,7 +32,6 @@ export const createPDIRequest = async (req, res) => {
     const bookingId = getCityPrefix();
 
     const newRequest = new PDIRequest({
-    
       customerName: user.name,
       customerMobile: user.mobile,
 
@@ -58,7 +56,7 @@ export const createPDIRequest = async (req, res) => {
     res.status(201).json({
       message: "PDI Request created successfully",
       request: newRequest,
-      vehicleImage: vehicle.imageUrl, 
+      vehicleImage: vehicle.imageUrl,
     });
   } catch (error) {
     console.error("Create request error:", error.message, error.stack);
@@ -68,33 +66,152 @@ export const createPDIRequest = async (req, res) => {
   }
 };
 
-export const updatePDIInspection = async (req, res) => {
-  try {
-    const { id } = req.params; 
-    const updateData = { ...req.body };
+// export const updatePDIInspection = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const updateData = { ...req.body };
 
-    
-    if (req.files?.imagesUrl) {
-      updateData.imagesUrl = req.files.imagesUrl.map((file) => file.path);
+//     if (req.files?.imagesUrl) {
+//       updateData.imagesUrl = req.files.imagesUrl.map((file) => file.path);
+//     }
+
+//     const updatedPDIRequest = await PDIRequest.findByIdAndUpdate(
+//       id,
+//       updateData,
+//       { new: true }
+//     );
+
+//     if (!updatedPDIRequest) {
+//       return res.status(404).json({ message: "PDI Request not found" });
+//     }
+
+//     res.status(200).json({
+//       message: "PDI Request updated successfully",
+//       data: updatedPDIRequest,
+//     });
+//   } catch (error) {
+//     console.error("Update PDI Inspection Error:", error);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// };
+
+export const addInspectionCategoriesWithImages = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Step 1: Parse inspection array from FormData
+    let newCategories;
+    try {
+      newCategories = JSON.parse(req.body.inspection);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid inspection JSON format.",
+      });
     }
 
-    const updatedPDIRequest = await PDIRequest.findByIdAndUpdate(
+    if (!Array.isArray(newCategories) || newCategories.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Inspection must be a non-empty array of categories.",
+      });
+    }
+
+    // Step 2: Get existing inspection data
+    const existingDoc = await PDIRequest.findById(id);
+    if (!existingDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "PDI Request not found",
+      });
+    }
+
+    const existingInspection = existingDoc.inspection || [];
+
+    // Step 3: Handle image files
+    const imageFiles = req.files || [];
+    let imageIndex = 0;
+
+    for (let category of newCategories) {
+      const newCatName = (category?.categoryName || "").trim().toLowerCase();
+
+      const existingCategory = existingInspection.find(
+        (cat) => (cat?.categoryName || "").trim().toLowerCase() === newCatName
+      );
+
+      if (existingCategory) {
+        // Category exists
+        for (let newPart of category.parts || []) {
+          const newPartName = (newPart?.partName || "").trim().toLowerCase();
+
+          const existingPart = (existingCategory.parts || []).find(
+            (p) => (p?.partName || "").trim().toLowerCase() === newPartName
+          );
+
+          const partRef = existingPart || newPart;
+          partRef.imagesUrl = [];
+
+          for (let i = 0; i < 5 && imageIndex < imageFiles.length; i++) {
+            const image = imageFiles[imageIndex];
+            const relativePath = path
+              .relative(process.cwd(), image.path)
+              .replace(/\\/g, "/");
+            const fileUrl = `${req.protocol}://${req.get(
+              "host"
+            )}/${relativePath}`;
+            partRef.imagesUrl.push(fileUrl);
+            imageIndex++;
+          }
+
+          if (existingPart) {
+            // Merge fields only if existing part
+            if (!Array.isArray(existingPart.fields)) existingPart.fields = [];
+            existingPart.fields.push(...(newPart.fields || []));
+          } else {
+            existingCategory.parts.push(newPart);
+          }
+        }
+      } else {
+        // New category
+        for (let part of category.parts || []) {
+          part.imagesUrl = [];
+
+          for (let i = 0; i < 5 && imageIndex < imageFiles.length; i++) {
+            const image = imageFiles[imageIndex];
+            const relativePath = path
+              .relative(process.cwd(), image.path)
+              .replace(/\\/g, "/");
+            const fileUrl = `${req.protocol}://${req.get(
+              "host"
+            )}/${relativePath}`;
+            part.imagesUrl.push(fileUrl);
+            imageIndex++;
+          }
+        }
+
+        existingInspection.push(category);
+      }
+    }
+
+    // Step 4: Update DB using only $set to avoid conflict
+    const updated = await PDIRequest.findByIdAndUpdate(
       id,
-      updateData,
+      { $set: { inspection: existingInspection } },
       { new: true }
     );
 
-    if (!updatedPDIRequest) {
-      return res.status(404).json({ message: "PDI Request not found" });
-    }
-
     res.status(200).json({
-      message: "PDI Request updated successfully",
-      data: updatedPDIRequest,
+      success: true,
+      message: "Inspection categories updated successfully",
+      data: updated,
     });
   } catch (error) {
-    console.error("Update PDI Inspection Error:", error);
-    res.status(500).json({ error: "Server error" });
+    console.error("Error adding inspection categories:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while adding inspection categories",
+      error,
+    });
   }
 };
 

@@ -1,11 +1,28 @@
 import mongoose from "mongoose";
 
+const inspectionFieldSchema = new mongoose.Schema({
+  fieldName: { type: String, required: true },
+  value: mongoose.Schema.Types.Mixed,
+  type: { type: String },
+});
+
+const inspectionPartSchema = new mongoose.Schema({
+  partName: { type: String, required: true },
+  isAvailable: { type: Boolean, default: true },
+  fields: [inspectionFieldSchema],
+  imagesUrl: [{ type: String }],
+});
+
+const inspectionCategorySchema = new mongoose.Schema({
+  categoryName: { type: String, required: true }, 
+  parts: [inspectionPartSchema], 
+});
+
 const requestSchema = new mongoose.Schema(
   {
     customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      // required: true,
     },
     customerName: { type: String },
     customerMobile: { type: String },
@@ -14,9 +31,9 @@ const requestSchema = new mongoose.Schema(
     model: { type: String, required: true },
     variant: { type: String, required: true },
 
-    imageUrl: { type: String }, // from Vehicle
-    transmissionType: { type: String }, // from Vehicle
-    fuelType: { type: String }, // from Vehicle
+    imageUrl: { type: String },
+    transmissionType: { type: String },
+    fuelType: { type: String },
 
     dealerName: { type: String },
     address: { type: String },
@@ -39,15 +56,12 @@ const requestSchema = new mongoose.Schema(
       default: "Pending",
     },
 
-    imagesUrl: [{ type: String }],
-
     engineer: {
       name: { type: String },
       number: { type: String },
-    
-     
-
     },
+
+    inspection: [inspectionCategorySchema],
   },
   { timestamps: true }
 );

@@ -3,9 +3,10 @@ import {
   createPDIRequest,
   assignEngineer,
   getAllPDIRequests,
-  updatePDIInspection,
+  addInspectionCategoriesWithImages,
 } from "../../controllers/PDI/pdi.controller.js";
 import authMiddlewares from "../../middleware/authMiddleware.js";
+import { uploadDocument } from './../../controllers/meta/commonController.js';
 
 const router = express.Router();
 
@@ -19,6 +20,11 @@ router.post("/create", authMiddlewares, createPDIRequest);
 //   updatePDIInspection
 // );
 router.get("/request", getAllPDIRequests);
+router.patch(
+  "/updateInspectionById/:id",
+  uploadDocument.array("documents", 20),
+  addInspectionCategoriesWithImages
+);
 router.put("/assign/:bookingId", assignEngineer);
 
 export default router;
