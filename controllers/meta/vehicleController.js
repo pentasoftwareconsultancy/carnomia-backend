@@ -84,6 +84,52 @@ export const getVehicleById = async (req, res) => {
   }
 };
 
+// Update vehicle
+export const updateVehicle = async (req, res) => {
+  try {
+    const {
+      brand,
+      model,
+      variant,
+      fuelType,
+      transmissionType,
+      BHPs,
+      Airbags,
+      Mileage,
+      NCAP,
+      imageUrl,
+    } = req.body;
+
+    const updatedVehicle = await Vehicle.findByIdAndUpdate(
+      req.params.id,
+      {
+        brand,
+        model,
+        variant,
+        fuelType,
+        transmissionType,
+        BHPs,
+        Airbags,
+        Mileage,
+        NCAP,
+        imageUrl,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedVehicle) {
+      return res.status(404).json({ message: "Vehicle not found" });
+    }
+
+    res.json({
+      message: "Vehicle updated successfully",
+      data: updatedVehicle,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 // Delete vehicle
 export const deleteVehicle = async (req, res) => {
   try {
@@ -97,3 +143,4 @@ export const deleteVehicle = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+

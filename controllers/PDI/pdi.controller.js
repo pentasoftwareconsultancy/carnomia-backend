@@ -66,160 +66,61 @@ export const createPDIRequest = async (req, res) => {
   }
 };
 
-// export const updatePDIInspection = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const updateData = { ...req.body };
-
-//     if (req.files?.imagesUrl) {
-//       updateData.imagesUrl = req.files.imagesUrl.map((file) => file.path);
-//     }
-
-//     const updatedPDIRequest = await PDIRequest.findByIdAndUpdate(
-//       id,
-//       updateData,
-//       { new: true }
-//     );
-
-//     if (!updatedPDIRequest) {
-//       return res.status(404).json({ message: "PDI Request not found" });
-//     }
-
-//     res.status(200).json({
-//       message: "PDI Request updated successfully",
-//       data: updatedPDIRequest,
-//     });
-//   } catch (error) {
-//     console.error("Update PDI Inspection Error:", error);
-//     res.status(500).json({ error: "Server error" });
-//   }
-// };
-
-export const addInspectionCategoriesWithImages = async (req, res) => {
+export const updateInspectionById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Step 1: Parse inspection array from FormData
-    let newCategories;
-    try {
-      newCategories = JSON.parse(req.body.inspection);
-    } catch (err) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid inspection JSON format.",
-      });
-    }
-
-    if (!Array.isArray(newCategories) || newCategories.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Inspection must be a non-empty array of categories.",
-      });
-    }
-
-    // Step 2: Get existing inspection data
-    const existingDoc = await PDIRequest.findById(id);
-    if (!existingDoc) {
-      return res.status(404).json({
-        success: false,
-        message: "PDI Request not found",
-      });
-    }
-
-    const existingInspection = existingDoc.inspection || [];
-
-    // Step 3: Handle image files
-    const imageFiles = req.files || [];
-    let imageIndex = 0;
-
-    for (let category of newCategories) {
-      const newCatName = (category?.categoryName || "").trim().toLowerCase();
-
-      const existingCategory = existingInspection.find(
-        (cat) => (cat?.categoryName || "").trim().toLowerCase() === newCatName
-      );
-
-      if (existingCategory) {
-        // Category exists
-        for (let newPart of category.parts || []) {
-          const newPartName = (newPart?.partName || "").trim().toLowerCase();
-
-          const existingPart = (existingCategory.parts || []).find(
-            (p) => (p?.partName || "").trim().toLowerCase() === newPartName
-          );
-
-          const partRef = existingPart || newPart;
-          partRef.imagesUrl = [];
-
-          for (let i = 0; i < 5 && imageIndex < imageFiles.length; i++) {
-            const image = imageFiles[imageIndex];
-            const relativePath = path
-              .relative(process.cwd(), image.path)
-              .replace(/\\/g, "/");
-            const fileUrl = `${req.protocol}://${req.get(
-              "host"
-            )}/${relativePath}`;
-            partRef.imagesUrl.push(fileUrl);
-            imageIndex++;
-          }
-
-          if (existingPart) {
-            // Merge fields only if existing part
-            if (!Array.isArray(existingPart.fields)) existingPart.fields = [];
-            existingPart.fields.push(...(newPart.fields || []));
-          } else {
-            existingCategory.parts.push(newPart);
-          }
-        }
-      } else {
-        // New category
-        for (let part of category.parts || []) {
-          part.imagesUrl = [];
-
-          for (let i = 0; i < 5 && imageIndex < imageFiles.length; i++) {
-            const image = imageFiles[imageIndex];
-            const relativePath = path
-              .relative(process.cwd(), image.path)
-              .replace(/\\/g, "/");
-            const fileUrl = `${req.protocol}://${req.get(
-              "host"
-            )}/${relativePath}`;
-            part.imagesUrl.push(fileUrl);
-            imageIndex++;
-          }
-        }
-
-        existingInspection.push(category);
-      }
-    }
-
-    // Step 4: Update DB using only $set to avoid conflict
-    const updated = await PDIRequest.findByIdAndUpdate(
+    // Destructure fields from body (imageUrls will come as strings or arrays directly)
+    const updateData = req.body;
+    
+    const updatedInspection = await PDIRequest.findByIdAndUpdate(
       id,
-      { $set: { inspection: existingInspection } },
+      { $set: updateData },
       { new: true }
     );
 
-    res.status(200).json({
-      success: true,
-      message: "Inspection categories updated successfully",
-      data: updated,
+    if (!updatedInspection) {
+      return res.status(404).json({ message: "Inspection not found" });
+    }
+
+    res.json({
+      message: "Inspection updated successfully",
+      data: updatedInspection
     });
   } catch (error) {
-    console.error("Error adding inspection categories:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while adding inspection categories",
-      error,
+    console.error("Error updating inspection:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+export const getPDIRequestById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Request ID is required" });
+    }
+
+    const request = await PDIRequest.findById(id);
+
+    if (!request) {
+      return res.status(404).json({ message: "PDI Request not found" });
+    }
+
+    res.status(200).json({
+      message: "PDI Request fetched successfully",
+      data: request,
     });
+  } catch (error) {
+    console.error("Error fetching PDI Request by ID:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
 export const getAllPDIRequests = async (req, res) => {
   try {
     const requests = await PDIRequest.find();
-
-    console.log("All PDI Requests:", requests);
 
     res.status(200).json({
       success: true,
@@ -235,40 +136,96 @@ export const getAllPDIRequests = async (req, res) => {
   }
 };
 
+ export const getPDIRequestsByEngineer = async (req, res) => {
+  try {
+    const { engineerId } = req.params; // Coming from route like /pdi/engineer/:engineerId
+
+    if (!engineerId) {
+      return res.status(400).json({
+        success: false,
+        message: "Engineer ID is required",
+      });
+    }
+
+    const requests = await PDIRequest.find({ engineer_id:engineerId });
+
+    res.status(200).json({
+      success: true,
+      total: requests.length,
+      data: requests,
+    });
+  } catch (error) {
+    console.error("Get PDI Requests by Engineer Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching PDI requests",
+    });
+  }
+};
+
+export const getPDIRequestsByStatuses = async (req, res) => {
+  try {
+    const  statuses  = req.body; // Pass as array
+
+    if (!Array.isArray(statuses) || statuses.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Statuses array is required",
+      });
+    }
+
+    const requests = await PDIRequest.find({
+      status: { $in: statuses }
+    });
+
+    res.status(200).json({
+      success: true,
+      total: requests.length,
+      data: requests,
+    });
+  } catch (error) {
+    console.error("Get PDI Requests by Statuses Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching PDI requests",
+    });
+  }
+};
+
 export const assignEngineer = async (req, res) => {
   try {
-    const { bookingId } = req.params;
-    const trimmedBookingId = bookingId.trim();
-    console.log("Assigning engineer to booking ID:", trimmedBookingId);
+    // const { bookingId } = req.params;
+    // const requestId = bookingId.trim();
+    const { engineerId, location, timeSlot, requestId } = req.body;
 
-    const { name, mobile } = req.body;
+    if (!engineerId || !location || !timeSlot) {
+      return res.status(400).json({ message: "Engineer ID, location and time slot are required" });
+    }
 
-    // Find engineer
-    const engineer = await User.findOne({ name, mobile, role: "engineer" });
-
+    // Find engineer by _id and role engineer
+    const engineer = await User.findOne({ _id: engineerId, role: "engineer" });
     if (!engineer) {
       return res.status(404).json({ message: "Engineer not found" });
     }
 
-    // Update using bookingId instead of _id
+    console.log('asss eng', engineer)
+
+    // Update the PDIRequest by bookingId
     const updatedRequest = await PDIRequest.findOneAndUpdate(
-      { bookingId: trimmedBookingId },
-      {
-        engineer: {
-          name: engineer.name,
-          number: engineer.mobile,
-        },
-        status: "Assigned",
+      { _id: requestId },
+       {
+          engineer_id: engineer._id,
+          engineer_name: engineer.name,
+          engineer_mobile: engineer.mobile,
+          engineer_location: location,
+          engineer_assignedSlot: timeSlot,
+        status: "ASSIGNED_ENGINEER", // or your exact status constant
       },
       { new: true }
     );
 
-    console.log("updated request" + updatedRequest);
-
     if (!updatedRequest) {
-      return res
-        .status(404)
-        .json({ message: "PDI Request not found with this bookingId" });
+      return res.status(404).json({ message: "PDI Request not found with this bookingId" });
     }
 
     res.status(200).json({
@@ -278,5 +235,83 @@ export const assignEngineer = async (req, res) => {
   } catch (error) {
     console.error("Assign Engineer Error:", error);
     res.status(500).json({ message: "Server Error" });
+  }
+};
+
+
+export const getSelectedPDIWithVehicleData = async (req, res) => {
+  try {
+    const { brand, variant } = req.query;
+
+    // Build match condition dynamically
+    const matchStage = {};
+    if (brand) matchStage.brand = brand;
+    if (variant) matchStage.variant = variant;
+
+    const data = await PDIRequest.aggregate([
+      {
+        $match: matchStage,
+      },
+      {
+        $lookup: {
+          from: "vehicles",
+          let: {
+            brand: "$brand",
+            model: "$model",
+            variant: "$variant",
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ["$brand", "$$brand"] },
+                    { $eq: ["$model", "$$model"] },
+                    { $eq: ["$variant", "$$variant"] },
+                  ],
+                },
+              },
+            },
+            {
+              $project: {
+                BHPs: 1,
+                Airbags: 1,
+                Mileage: 1,
+                NCAP: 1,
+                _id: 0,
+              },
+            },
+          ],
+          as: "vehicleDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$vehicleDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          brand: 1,
+          model: 1,
+          variant: 1,
+          imageUrl: 1,
+          transmissionType: 1,
+          fuelType: 1,
+          dealerName: 1,
+          bookingId: 1,
+          BHPs: "$vehicleDetails.BHPs",
+          Airbags: "$vehicleDetails.Airbags",
+          Mileage: "$vehicleDetails.Mileage",
+          NCAP: "$vehicleDetails.NCAP",
+        },
+      },
+    ]);
+
+    res.status(200).json({ success: true, data });
+  } catch (err) {
+    console.error("Error in joined query:", err);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

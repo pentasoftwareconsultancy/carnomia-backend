@@ -3,7 +3,11 @@ import {
   createPDIRequest,
   assignEngineer,
   getAllPDIRequests,
-  addInspectionCategoriesWithImages,
+  getPDIRequestsByEngineer,
+  updateInspectionById,
+  getPDIRequestsByStatuses,
+  getPDIRequestById,
+  getSelectedPDIWithVehicleData,
 } from "../../controllers/PDI/pdi.controller.js";
 import authMiddlewares from "../../middleware/authMiddleware.js";
 import { uploadDocument } from './../../controllers/meta/commonController.js';
@@ -20,12 +24,17 @@ router.post("/create", authMiddlewares, createPDIRequest);
 //   updatePDIInspection
 // );
 router.get("/request", getAllPDIRequests);
-router.patch(
-  "/updateInspectionById/:id",
-  uploadDocument.array("documents", 20),
-  addInspectionCategoriesWithImages
+router.get("/request-by-id/:id", getPDIRequestById);
+router.get("/request-by-engineer/:engineerId", authMiddlewares, getPDIRequestsByEngineer);
+router.post("/requests/statuses", getPDIRequestsByStatuses);
+
+
+router.put(
+  "/request/updateInspectionById/:id",
+  updateInspectionById
 );
-router.put("/assign/:bookingId", assignEngineer);
+router.put("/request/assign", assignEngineer);
+router.get("/with-vehicle-data", getSelectedPDIWithVehicleData);
 
 export default router;
 

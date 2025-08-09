@@ -4,24 +4,28 @@ import {
   getAllVehicles,
   getVehicleById,
   deleteVehicle,
+  updateVehicle,
 } from "../../controllers/meta/vehicleController.js";
+import { 
+  createLocation, 
+  deleteLocation, 
+  getLocations, 
+  updateLocation,
+} from "../../controllers/meta/locationController.js";
 
 const router = express.Router();
 
-// Vehicle Routes
-router.post(
-  "/vehicle",
+//Location Routes
+router.post("/createLocations", createLocation);
+router.get("/getLocations", getLocations);
+router.put("/updateLocations", updateLocation);
+router.delete("/deleteLocations/:name", deleteLocation);
 
-  // uploadDocument.single("image"),
-  
-  createVehicle
-);
+// Vehicle Routes
+router.post("/vehicle",createVehicle);
 router.get("/getallvehicle", getAllVehicles);
 router.get("/:id", getVehicleById);
-router.delete("/:id", deleteVehicle);
-
-// Locations routes
-
-// Meta Routes
+router.patch("/updateVehicle/:id", updateVehicle);
+router.delete("/deleteVehicle/:id", deleteVehicle);
 
 export default router;

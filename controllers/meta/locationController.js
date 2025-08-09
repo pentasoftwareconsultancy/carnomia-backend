@@ -1,99 +1,128 @@
-import Vehicle from "../../models/Vehicle.model.js";
+import Location from "../../models/Location.model.js";
 
-// Add new vehicle
-export const createVehicle = async (req, res) => {
+// Create a new location entry (array) or push into existing one
+export const createLocation = async (req, res) => {
   try {
-    const {
-      brand,
-      model,
-      variant,
-      fuelType,
-      transmissionType,
-      BHPs,
-      Airbags,
-      Mileage,
-      NCAP,
-    } = req.body;
+    let { name, locations } = req.body;
 
-    //uploaded image URL from Cloudinary via Multer
-    const imageUrl = req.file?.path;
+    console.log("Location", locations);
 
-    if (!imageUrl) {
-      return res.status(400).json({ message: "Image upload is required." });
+    let newLocations = [];
+    if (name) {
+      newLocations.push(name);
+    } else if (Array.isArray(locations) && locations.length > 0) {
+      newLocations = locations;
+    } else {
+      return res.status(400).json({ message: "Location name(s) are required" });
     }
 
-    //Prevent duplicates
-    const existing = await Vehicle.findOne({ brand, model, variant });
+    let locationDoc = await Location.findOne();
 
-    if (existing) {
-      return res.status(400).json({ message: "Vehicle already exists." });
+    if (!locationDoc) {
+      const newLocationDoc = new Location({ locations: newLocations });
+      await newLocationDoc.save();
+      return res.status(201).json({
+        message: "Location list created",
+        locations: newLocationDoc,
+      });
     }
 
-    //Save to MongoDB
-    const newVehicle = await Vehicle.create({
-      brand,
-      model,
-      variant,
-      fuelType,
-      transmissionType,
-      BHPs,
-      Airbags,
-      Mileage,
-      NCAP,
-      imageUrl,
-    });
+    let addedLocations = [];
+    for (let loc of newLocations) {
+      if (!locationDoc.locations.includes(loc)) {
+        locationDoc.locations.push(loc);
+        addedLocations.push(loc);
+      }
+    }
 
-    // console.log("New vehicle created:", newVehicle);
-
-    res.status(201).json({
-      message: "Vehicle added successfully",
-      data: newVehicle,
-    });
-  } catch (error) {
-    console.error("createVehicle error:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-// Get all vehicles from drivesta
-export const getAllVehicles = async (req, res) => {
-  try {
-    const vehicles = await Vehicle.find();
-    res.json({
-      message: "Vehicles fetched successfully",
-      data: vehicles,
-    });
+    if (addedLocations.length > 0) {
+      await locationDoc.save();
+      return res.status(200).json({
+        message: "Locations added successfully",
+        added: addedLocations,
+        locations: locationDoc,
+      });
+    } else {
+      return res.status(400).json({ message: "All locations already exist" });
+    }
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// Get single vehicle by ID
-export const getVehicleById = async (req, res) => {
+// Get all locations
+// Modified getLocations
+export const getLocations = async (req, res) => {
   try {
-    const vehicle = await Vehicle.findById(req.params.id);
-    if (!vehicle) {
-      return res.status(404).json({ message: "Vehicle not found" });
+    const locationDoc = await Location.findOne();
+    if (!locationDoc) {
+      return res.status(200).json({ locations: [] });
     }
-
-    res.json({
-      message: "Vehicle fetched successfully",
-      data: vehicle,
-    });
+    res.status(200).json({ locations: locationDoc.locations });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// Delete vehicle
-export const deleteVehicle = async (req, res) => {
+// Update a location name inside the array
+export const updateLocation = async (req, res) => {
   try {
-    const vehicle = await Vehicle.findByIdAndDelete(req.params.id);
-    if (!vehicle) {
-      return res.status(404).json({ message: "Vehicle not found" });
+    const { oldName, newName } = req.body;
+
+    if (!oldName || !newName) {
+      return res
+        .status(400)
+        .json({ message: "Both old and new names are required" });
     }
 
-    res.json({ message: "Vehicle deleted successfully" });
+    let locationDoc = await Location.findOne();
+    if (!locationDoc) {
+      return res.status(404).json({ message: "No locations found" });
+    }
+
+    const index = locationDoc.locations.indexOf(oldName);
+    if (index === -1) {
+      return res.status(404).json({ message: "Old location name not found" });
+    }
+
+    // Replace old name with new one
+    locationDoc.locations[index] = newName;
+    await locationDoc.save();
+
+    res
+      .status(200)
+      .json({ message: "Location updated", locations: locationDoc });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Delete a location name from array
+export const deleteLocation = async (req, res) => {
+  try {
+    const name = req.params.name; 
+
+    if (!name) {
+      return res.status(400).json({ message: "Location name is required" });
+    }
+
+    let locationDoc = await Location.findOne();
+    if (!locationDoc) {
+      return res.status(404).json({ message: "No locations found" });
+    }
+
+    const initialLength = locationDoc.locations.length;
+    locationDoc.locations = locationDoc.locations.filter((loc) => loc !== name);
+
+    if (locationDoc.locations.length === initialLength) {
+      return res.status(404).json({ message: "Location not found" });
+    }
+
+    await locationDoc.save();
+
+    res
+      .status(200)
+      .json({ message: "Location deleted", locations: locationDoc });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
