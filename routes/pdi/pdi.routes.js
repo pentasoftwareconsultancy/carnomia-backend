@@ -34,7 +34,7 @@ router.put(
   updateInspectionById
 );
 router.put("/request/assign", assignEngineer);
-router.get("/with-vehicle-data", getSelectedPDIWithVehicleData);
+router.get("/PDIRequestwithvehicledata", getSelectedPDIWithVehicleData);
 
 export default router;
 

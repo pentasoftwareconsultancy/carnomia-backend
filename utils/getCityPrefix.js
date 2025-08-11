@@ -30,7 +30,7 @@ function getCityPrefix(address) {
     idCounters[prefix]++;
   }
 
-  const serial = String(idCounters[prefix]).padStart(3, "0");
+  const serial = String(idCounters[prefix]).padStart(5, "0");
 
   return `${prefix}${FIXED_SUFFIX}${serial}`;
 }

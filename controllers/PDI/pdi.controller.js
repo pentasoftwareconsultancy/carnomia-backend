@@ -32,7 +32,7 @@ export const createPDIRequest = async (req, res) => {
     const bookingId = getCityPrefix();
 
     const newRequest = new PDIRequest({
-      customerName: user.name,
+      name: user.name,
       customerMobile: user.mobile,
 
       brand,
@@ -72,6 +72,9 @@ export const updateInspectionById = async (req, res) => {
 
     // Destructure fields from body (imageUrls will come as strings or arrays directly)
     const updateData = req.body;
+
+    console.log("data",updateData);
+    
     
     const updatedInspection = await PDIRequest.findByIdAndUpdate(
       id,

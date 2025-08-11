@@ -26,15 +26,12 @@ const requestSchema = new mongoose.Schema(
     },
     customerName: { type: String },
     customerMobile: { type: String },
-
     brand: { type: String, required: true },
     model: { type: String, required: true },
     variant: { type: String, required: true },
-
     imageUrl: { type: String },
     transmissionType: { type: String },
     fuelType: { type: String },
-
     dealerName: { type: String },
     address: { type: String },
     carStatus: { type: String },
@@ -46,14 +43,14 @@ const requestSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        "Pending",
-        "Reject",
-        "Waiting for Approval",
-        "Assigned",
-        "Ongoing",
-        "Completed",
+        "NEW",
+        "REJECT",
+        "WAITING FOR APPROVAL",
+        "ASSIGNED",
+        "ONGOING",
+        "COMPLETED",
       ],
-      default: "Pending",
+      default: "NEW",
     },
     engineer_id: { type: String },
     engineer_name: { type: String },
