@@ -26,12 +26,15 @@ const requestSchema = new mongoose.Schema(
     },
     customerName: { type: String },
     customerMobile: { type: String },
+
     brand: { type: String, required: true },
     model: { type: String, required: true },
     variant: { type: String, required: true },
+
     imageUrl: { type: String },
     transmissionType: { type: String },
     fuelType: { type: String },
+
     dealerName: { type: String },
     address: { type: String },
     carStatus: { type: String },
@@ -44,11 +47,11 @@ const requestSchema = new mongoose.Schema(
       type: String,
       enum: [
         "NEW",
-        "REJECT",
-        "WAITING FOR APPROVAL",
-        "ASSIGNED",
-        "ONGOING",
-        "COMPLETED",
+        "Reject",
+        "Waiting for Approval",
+        "Assigned",
+        "Ongoing",
+        "Completed",
       ],
       default: "NEW",
     },
@@ -62,9 +65,13 @@ const requestSchema = new mongoose.Schema(
 
     // Basic Info
   vinNumber: String,
+  vinNumber_imageUrl: String,
   engineNumber: String,
+  engineNumber_imageUrl: String,
   odo: Number,
+  odo_imageUrl: String,
   keys: String,
+  keys_imageUrl: String,
   dealer_pdi: { type: Boolean, default: false },
 
   front_left_imageUrl: String,
@@ -116,8 +123,8 @@ const requestSchema = new mongoose.Schema(
   boot_issue: String,
   boot_tail_light_console_left: String,
   boot_tail_light_console_right: String,
+
   boot_imageUrls: [String],
-  boot_tail_light_console_imageUrls: [String],
   boot_tail_light_console_imageUrls: [String],
 
   rear_bumper_issue: String,
@@ -292,18 +299,42 @@ const requestSchema = new mongoose.Schema(
   plastic_irvm_imageUrls: [String],
 
   // 7) Features & Functions
-  feature_parking_sensors_front: Boolean,
-  feature_parking_sensors_rear: Boolean,
-  feature_front_view_camera: Boolean,
-  feature_rear_view_camera: Boolean,
-  feature_camera_360: Boolean,
-  feature_touch_screen: Boolean,
-  feature_speakers: Boolean,
-  feature_electric_orvm: Boolean,
-  feature_auto_dimming_irvm: Boolean,
-  feature_ventilated_seat_driver: Boolean,
-  feature_ventilated_seat_codriver: Boolean,
-  feature_ventilated_seat_rear: Boolean,
+  feature_parking_sensors_front_available: { type: Boolean, default: true },      // Default true as available
+  feature_parking_sensors_front_issueObserved: { type: Boolean, default: false }, // Default false as no issue observed
+
+  feature_parking_sensors_rear_available: { type: Boolean, default: true },
+  feature_parking_sensors_rear_issueObserved: { type: Boolean, default: false },
+
+  feature_front_view_camera_available: { type: Boolean, default: true },
+  feature_front_view_camera_issueObserved: { type: Boolean, default: false },
+
+  feature_rear_view_camera_available: { type: Boolean, default: true },
+  feature_rear_view_camera_issueObserved: { type: Boolean, default: false },
+
+  feature_camera_360_available: { type: Boolean, default: true },
+  feature_camera_360_issueObserved: { type: Boolean, default: false },
+
+  feature_touch_screen_available: { type: Boolean, default: true },
+  feature_touch_screen_issueObserved: { type: Boolean, default: false },
+
+  feature_speakers_available: { type: Boolean, default: true },
+  feature_speakers_issueObserved: { type: Boolean, default: false },
+
+  feature_electric_orvm_available: { type: Boolean, default: true },
+  feature_electric_orvm_issueObserved: { type: Boolean, default: false },
+
+  feature_auto_dimming_irvm_available: { type: Boolean, default: true },
+  feature_auto_dimming_irvm_issueObserved: { type: Boolean, default: false },
+
+  feature_ventilated_seat_driver_available: { type: Boolean, default: true },
+  feature_ventilated_seat_driver_issueObserved: { type: Boolean, default: false },
+
+  feature_ventilated_seat_codriver_available: { type: Boolean, default: true },
+  feature_ventilated_seat_codriver_issueObserved: { type: Boolean, default: false },
+
+  feature_ventilated_seat_rear_available: { type: Boolean, default: true },
+  feature_ventilated_seat_rear_issueObserved: { type: Boolean, default: false },
+
 
   // 8) Live Parameters
   live_engine_load_toggle:{ type: Boolean, default: false },
@@ -315,18 +346,35 @@ const requestSchema = new mongoose.Schema(
   live_distance_in_current_lock_block: Number,
 
   // 9) Fluid Levels
-  fluid_coolant: Boolean,
-  fluid_engine_oil: Boolean,
-  fluid_brake_oil: Boolean,
-  fluid_washer_fluid: Boolean,
-  engine: String,
-  transmission: String,
-  brakes: String,
-  diagnostic_codes: String,
+  fluid_coolant_withinRange: { type: Boolean, default: false },
+  fluid_coolant_contamination: { type: Boolean, default: false },
 
-  // 10) Tyres
+  fluid_engineOil_withinRange: { type: Boolean, default: false },
+  fluid_engineOil_contamination: { type: Boolean, default: false },
+
+  fluid_brakeOil_withinRange: { type: Boolean, default: false },
+  fluid_brakeOil_contamination: { type: Boolean, default: false },
+
+  fluid_washerFluid_withinRange: { type: Boolean, default: false },
+  fluid_washerFluid_contamination: { type: Boolean, default: false },
+
+  // 10) Engine
+  engine_issue: String,
+  
+  // 11) Transmission
+  transmission_issue: String,
+
+  // 12) Brakes
+  brakes_issue: String,
+
+  // 13) Diagnostics
+  diagnostic_codes: [String],
+
+
+  // 14) Tyres
   tyre_front_left_brand: String,
   tyre_front_left_subBrand: String,
+  tyre_front_left_variant: String,
   tyre_front_left_size: String,
   tyre_front_left_manufacturingDate: String,
   tyre_front_left_treadDepth: Number,
@@ -335,6 +383,7 @@ const requestSchema = new mongoose.Schema(
 
   tyre_rear_left_brand: String,
   tyre_rear_left_subBrand: String,
+  tyre_rear_left_variant: String,
   tyre_rear_left_size: String,
   tyre_rear_left_manufacturingDate: String,
   tyre_rear_left_treadDepth: Number,
@@ -343,6 +392,7 @@ const requestSchema = new mongoose.Schema(
 
   tyre_rear_right_brand: String,
   tyre_rear_right_subBrand: String,
+  tyre_rear_right_variant: String,
   tyre_rear_right_size: String,
   tyre_rear_right_manufacturingDate: String,
   tyre_rear_right_treadDepth: Number,
@@ -351,6 +401,7 @@ const requestSchema = new mongoose.Schema(
 
   tyre_front_right_brand: String,
   tyre_front_right_subBrand: String,
+  tyre_front_right_variant: String,
   tyre_front_right_size: String,
   tyre_front_right_manufacturingDate: String,
   tyre_front_right_treadDepth: Number,
@@ -360,12 +411,16 @@ const requestSchema = new mongoose.Schema(
   tyre_spare_toggle: { type: Boolean, default: false },
   tyre_spare_brand: String,
   tyre_spare_subBrand: String,
+  tyre_spare_variant: String,
   tyre_spare_size: String,
   tyre_spare_manufacturingDate: String,
   tyre_spare_treadDepth: Number,
   tyre_spare_issue: String,
   tyre_spare_imageUrls: [String],
-  },
+
+  // 15) Other Observations
+  other_observations: String,
+},
   { timestamps: true }
 );
 

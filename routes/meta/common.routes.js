@@ -5,7 +5,7 @@ import path from "path";
 const router = express.Router();
 
 // Upload image route
-router.post("/upload", uploadDocument.array("documents", 10), (req, res) => {
+router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
   try {
     const documentType = req.body.documentType || "general";
     const baseUrl = `${req.protocol}://${req.get("host")}`;

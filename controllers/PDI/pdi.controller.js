@@ -16,6 +16,8 @@ export const createPDIRequest = async (req, res) => {
       notes,
     } = req.body;
 
+    console.log("Body received:", req.body);
+
     const user = await User.findById(req.user.id);
 
     console.log("user from id ", user);
@@ -29,10 +31,10 @@ export const createPDIRequest = async (req, res) => {
     }
 
     // Generate booking ID
-    const bookingId = getCityPrefix();
+    const bookingId = await getCityPrefix();
 
     const newRequest = new PDIRequest({
-      name: user.name,
+      customerName: user.name,
       customerMobile: user.mobile,
 
       brand,
@@ -46,11 +48,11 @@ export const createPDIRequest = async (req, res) => {
       dealerName,
       address,
       carStatus,
+      status: "NEW",
       date,
       notes,
       bookingId,
     });
-
     await newRequest.save();
 
     res.status(201).json({

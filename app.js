@@ -5,7 +5,7 @@ import userRoutes from "./routes/user/user.route.js";
 import pdiRoutes from "./routes/pdi/pdi.routes.js";
 import commonRoutes from "./routes/meta/common.routes.js";
 import metaRoutes from "./routes/meta/meta.routes.js";
-import lookupRoutes from "./routes/meta/lookupRoutes.js";
+import lookupRoutes from "./routes/meta/lookup.routes.js";
 import path from "path";
 import cors from "cors";
 import bcrypt from "bcryptjs";
