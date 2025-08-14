@@ -6,6 +6,9 @@ import {
   getPDIRequestsByEngineer,
   updateInspectionById,
   getPDIRequestsByStatuses,
+  getPDIRequestCountsByStatuses,
+  getRecentRequestByCustomer,
+  updatePaymentStatus,
   getPDIRequestById,
   getSelectedPDIWithVehicleData,
 } from "../../controllers/PDI/pdi.controller.js";
@@ -26,8 +29,10 @@ router.post("/create", authMiddlewares, createPDIRequest);
 router.get("/request", getAllPDIRequests);
 router.get("/request-by-id/:id", getPDIRequestById);
 router.get("/request-by-engineer/:engineerId", authMiddlewares, getPDIRequestsByEngineer);
-router.post("/requests/statuses", getPDIRequestsByStatuses);
-
+router.post("/requests/statuses", authMiddlewares, getPDIRequestsByStatuses);
+router.post("/requests/requests-count", getPDIRequestCountsByStatuses);
+router.get("/customer/recent", authMiddlewares, getRecentRequestByCustomer);
+router.put("/request/:id/payment-status",authMiddlewares, updatePaymentStatus);
 
 router.put(
   "/request/updateInspectionById/:id",

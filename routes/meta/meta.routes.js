@@ -12,6 +12,7 @@ import {
   getLocations, 
   updateLocation,
 } from "../../controllers/meta/locationController.js";
+import { submitInquiry } from "../../controllers/meta/inquiryController.js";
 
 const router = express.Router();
 
@@ -27,5 +28,9 @@ router.get("/getallvehicle", getAllVehicles);
 router.get("/:id", getVehicleById);
 router.patch("/updateVehicle/:id", updateVehicle);
 router.delete("/deleteVehicle/:id", deleteVehicle);
+
+// Inquiry Routes
+router.post("/submit-inquiry", submitInquiry);
+
 
 export default router;

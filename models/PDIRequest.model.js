@@ -26,7 +26,8 @@ const requestSchema = new mongoose.Schema(
     },
     customerName: { type: String },
     customerMobile: { type: String },
-
+    customerId : String,
+    
     brand: { type: String, required: true },
     model: { type: String, required: true },
     variant: { type: String, required: true },
@@ -370,6 +371,9 @@ const requestSchema = new mongoose.Schema(
   // 13) Diagnostics
   diagnostic_codes: [String],
 
+  paymentStatus:  String,
+  paymentMode: String,
+  paymentDate: String,
 
   // 14) Tyres
   tyre_front_left_brand: String,
@@ -418,6 +422,7 @@ const requestSchema = new mongoose.Schema(
   tyre_spare_issue: String,
   tyre_spare_imageUrls: [String],
 
+  amount: Number,
   // 15) Other Observations
   other_observations: String,
 },

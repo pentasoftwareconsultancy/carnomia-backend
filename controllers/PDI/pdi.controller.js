@@ -2,6 +2,7 @@ import getCityPrefix from "../../utils/getCityPrefix.js";
 import PDIRequest from "../../models/PDIRequest.model.js";
 import User from "../../models/User.model.js";
 import Vehicle from "../../models/Vehicle.model.js";
+import VehicleModel from "../../models/Vehicle.model.js";
 
 export const createPDIRequest = async (req, res) => {
   try {
@@ -34,6 +35,7 @@ export const createPDIRequest = async (req, res) => {
     const bookingId = await getCityPrefix();
 
     const newRequest = new PDIRequest({
+      customerId: req.user.id,
       customerName: user.name,
       customerMobile: user.mobile,
 
@@ -52,6 +54,9 @@ export const createPDIRequest = async (req, res) => {
       date,
       notes,
       bookingId,
+      paymentStatus: "PENDING",
+      paymentMode: "N/A",
+      amount: 2500
     });
     await newRequest.save();
 
@@ -98,6 +103,34 @@ export const updateInspectionById = async (req, res) => {
   }
 };
 
+export const updatePaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params; // PDI Request ID from URL
+    const { paymentStatus } = req.body; // New status from request body
+
+    if (!paymentStatus) {
+      return res.status(400).json({ message: "Payment status is required" });
+    }
+
+    const updatedRequest = await PDIRequest.findByIdAndUpdate(
+      id,
+      { paymentStatus },
+      { new: true } // returns updated document
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: "PDI Request not found" });
+    }
+
+    return res.status(200).json({
+      message: "Payment status updated successfully",
+      data: updatedRequest,
+    });
+  } catch (error) {
+    console.error("Error updating payment status:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 
 export const getPDIRequestById = async (req, res) => {
   try {
@@ -179,9 +212,18 @@ export const getPDIRequestsByStatuses = async (req, res) => {
       });
     }
 
-    const requests = await PDIRequest.find({
-      status: { $in: statuses }
-    });
+    let requests = [];
+    if(req.user.role === 'customer') {
+      console.log("Customer ID:", req.user.id);
+      requests = await PDIRequest.find({
+        status: { $in: statuses},
+        customerId: req.user.id
+      });
+    } else {
+      requests = await PDIRequest.find({
+        status: { $in: statuses }
+      });
+  }
 
     res.status(200).json({
       success: true,
@@ -196,6 +238,80 @@ export const getPDIRequestsByStatuses = async (req, res) => {
     });
   }
 };
+
+
+export const getPDIRequestCountsByStatuses = async (req, res) => {
+  try {
+    // Get all requests
+    const requests = await PDIRequest.find({});
+    // Get all engineers
+    const engineers = await User.find({ role: "engineer" });
+
+    const counts = {
+      newRequests: requests.filter(r => r.status === "NEW").length,
+      assignedJobs: requests.filter(r => r.status === "ASSIGNED_ENGINEER").length,
+      completedJobs: requests.filter(r => r.status === "COMEPLETED").length,
+      allRequests: requests.length,
+      activeEngineers: engineers?.length,
+      upcomingSchedule: 0 // Placeholder for future logic
+    };
+
+    res.status(200).json({
+      success: true,
+      data: counts
+    });
+  } catch (error) {
+    console.error("Get Dashboard Counts Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching dashboard counts"
+    });
+  }
+};
+
+
+export const getRecentRequestByCustomer = async (req, res) => {
+  try {
+    const customerMobile  = req.user.mobile; // pass customerId in URL
+
+    if (!customerMobile) {
+      return res.status(400).json({
+        success: false,
+        message: "Customer ID is required",
+      });
+    }
+
+    // Find the most recent request for this customer
+    let recentRequest = await PDIRequest.findOne({ customerMobile })
+      .sort({ createdAt: -1 }) // sort by createdAt descending
+      .lean(); // optional, returns plain JS object
+
+      const vehicleInfo = await VehicleModel.findOne({brand: recentRequest.brand, model: recentRequest.model }).lean();
+      recentRequest = {
+        ...recentRequest,
+        ...vehicleInfo
+      }
+
+    if (!recentRequest) {
+      return res.status(404).json({
+        success: false,
+        message: "No requests found for this customer",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: recentRequest,
+    });
+  } catch (error) {
+    console.error("Get Recent Request Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching recent request",
+    });
+  }
+};
+
 
 export const assignEngineer = async (req, res) => {
   try {

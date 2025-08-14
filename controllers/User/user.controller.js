@@ -100,7 +100,7 @@ export const updateUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { email, password, mobile, otp } = req.body;
+  const { name, email, password, mobile, otp } = req.body;
 
   console.log("Login attempt:", { email, mobile, password });
 
@@ -155,6 +155,8 @@ export const loginUser = async (req, res) => {
         token,
         user: {
           userId: user._id,
+          mobile: user.mobile,
+          name: user.name,
           email: user.email,
           role: user.role,
         },
@@ -310,9 +312,7 @@ export const getUsersByRoles = async (req, res) => {
   try {
     const { role } = req.params;
     const users = await User.find({ role});
-    
-    console.log("Users found:", users);
-    
+        
 
     if (!users || users.length === 0) {
       return res.status(404).json({ success: false, message: "No users found" });

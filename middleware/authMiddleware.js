@@ -38,29 +38,30 @@ import jwt from "jsonwebtoken";
 const authMiddlewares = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  console.log("Authorization header:", authHeader);
+  // console.log("Authorization header:", authHeader);
   
 
   // Check if Authorization header is present and starts with 'Bearer '
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.split(" ")[1];
 
-    console.log("Token extracted from header:", token);
+    // console.log("Token extracted from header:", token);
     
 
     try {
       // Verify token
-      console.log("Decoded token:", token);
+      // console.log("Decoded token:", token);
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
       // Attach user data to request object
       req.user = {
         id: decoded._id,
+        name: decoded.name,
         mobile: decoded.mobile,
         role: decoded.role,
       };
       
       // req.user= user;
-      console.log("User from token:", req.user);
+      // console.log("User from token:", req.user);
       next(); // Proceed to the next middleware/controller
     } catch (err) {
       return res.status(401).json({ message: "Invalid or expired token" });
