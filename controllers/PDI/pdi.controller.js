@@ -54,7 +54,7 @@ export const createPDIRequest = async (req, res) => {
       date,
       notes,
       bookingId,
-      paymentStatus: "PENDING",
+      paymentStatus: "UNPAID",
       paymentMode: "N/A",
       amount: 2500
     });
@@ -105,17 +105,17 @@ export const updateInspectionById = async (req, res) => {
 
 export const updatePaymentStatus = async (req, res) => {
   try {
-    const { id } = req.params; // PDI Request ID from URL
-    const { paymentStatus } = req.body; // New status from request body
+    const { id } = req.params; // PDI Request ID
+    const { paymentStatus, status } = req.body; // Accept both fields
 
-    if (!paymentStatus) {
-      return res.status(400).json({ message: "Payment status is required" });
+    if (!paymentStatus || !status) {
+      return res.status(400).json({ message: "Both paymentStatus and status are required" });
     }
 
     const updatedRequest = await PDIRequest.findByIdAndUpdate(
       id,
-      { paymentStatus },
-      { new: true } // returns updated document
+      { paymentStatus, status }, // Update both fields
+      { new: true }
     );
 
     if (!updatedRequest) {
@@ -123,11 +123,11 @@ export const updatePaymentStatus = async (req, res) => {
     }
 
     return res.status(200).json({
-      message: "Payment status updated successfully",
+      message: "Payment and request status updated successfully",
       data: updatedRequest,
     });
   } catch (error) {
-    console.error("Error updating payment status:", error);
+    console.error("Error updating payment/request status:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };

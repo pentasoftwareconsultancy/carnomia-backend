@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PDI Report</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f7fa;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 10px;
+    }
+
+    .header h1 {
+      margin: 0;
+      color: #2d8fdd;
+    }
+
+    .booking-id {
+      font-weight: bold;
+    }
+
+    .hero {
+      margin: 20px 0;
+    }
+
+    .hero img {
+      width: 100%;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .stat-box {
+      background: #e8f0fe;
+      padding: 10px;
+      text-align: center;
+      border-radius: 6px;
+      flex: 1;
+      margin: 5px;
+    }
+
+    .stat-box strong {
+      display: block;
+      font-size: 18px;
+    }
+
+    .section {
+      margin-top: 30px;
+    }
+
+    .section h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .info-item {
+      font-size: 14px;
+    }
+
+    .score-box {
+      text-align: center;
+      background: #e9fbe9;
+      border: 2px solid #27ae60;
+      border-radius: 10px;
+      padding: 15px;
+      max-width: 200px;
+      margin: 20px auto;
+    }
+
+    .score-box h1 {
+      margin: 0;
+      font-size: 36px;
+      color: #27ae60;
+    }
+
+    .score-box p {
+      margin: 5px 0 0;
+      font-size: 14px;
+    }
+
+    .odometer {
+      background: #eef6fc;
+      padding: 20px;
+      border-radius: 6px;
+      margin-top: 30px;
+    }
+
+    .odometer h3 {
+      margin-top: 0;
+    }
+
+    .bar-wrapper {
+      background: #ddd;
+      border-radius: 6px;
+      height: 20px;
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    .bar {
+      height: 20px;
+      background: #4caf50;
+      border-radius: 5px;
+      width: {{carRunningPercentage}}%;
+      transition: width 0.3s ease-in-out;
+    }
+
+    .no-tampering {
+      display: inline-block;
+      background: #4caf50;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      margin-top: 30px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Drivesta</h1>
+      <div class="booking-id">Booking ID: {{bookingId}}</div>
+    </div>
+
+    <div class="hero">
+      <img src="{{vehicleImage}}" alt="Vehicle Image" />
+      <div class="stats">
+        <div class="stat-box">
+          <strong>0</strong>
+          BHPs
+        </div>
+        <div class="stat-box">
+          <strong>6</strong>
+          Airbags
+        </div>
+        <div class="stat-box">
+          <strong>0</strong>
+          NCAP
+        </div>
+        <div class="stat-box">
+          <strong>17.0</strong>
+          Mileage (kmpl)
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Customer Info</h2>
+      <div class="info-grid">
+        <div class="info-item"><strong>Name:</strong> {{customerName}}</div>
+        <div class="info-item"><strong>Location:</strong> {{location}}</div>
+        <div class="info-item"><strong>Engineer:</strong> {{engineer}}</div>
+        <div class="info-item"><strong>PDI Date:</strong> {{pdiDate}} at {{pdiTime}}</div>
+        <div class="info-item"><strong>Address:</strong> {{address}}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Vehicle Info</h2>
+      <div class="info-grid">
+        <div class="info-item"><strong>Brand:</strong> {{brand}}</div>
+        <div class="info-item"><strong>Model:</strong> {{model}}</div>
+        <div class="info-item"><strong>Status:</strong> {{status}}</div>
+        <div class="info-item"><strong>VIN:</strong> {{vin}}</div>
+        <div class="info-item"><strong>Variant:</strong> {{variant}}</div>
+        <div class="info-item"><strong>Transmission:</strong> {{transmission}}</div>
+        <div class="info-item"><strong>Fuel:</strong> {{fuel}}</div>
+        <div class="info-item"><strong>Engine:</strong> {{engine}}</div>
+        <div class="info-item"><strong>Engine Type:</strong> {{engineType}}</div>
+        <div class="info-item"><strong>Emission:</strong> {{emission}}</div>
+        <div class="info-item"><strong>Keys:</strong> {{keys}}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Overall Vehicle Score</h2>
+      <div class="score-box">
+        <h1>{{score}}</h1>
+        <p>{{scoreRemark}}</p>
+      </div>
+    </div>
+
+    <div class="section odometer">
+      <h3>How Much Has My Car Been Driven Before The PDI Date?</h3>
+      <p><strong>My Car's Running:</strong> {{carRunning}} Kms</p>
+      <div class="bar-wrapper">
+        <div class="bar"></div>
+      </div>
+      <p><strong>Avg. Running Before Delivery:</strong> {{avgRunning}} Kms</p>
+      <div class="no-tampering">No Tampering</div>
+      <p style="margin-top: 10px; font-size: 12px;">
+        Details: At the time of PDI, your car's ODO reading was {{carRunning}} kms, which is slightly above the city average of {{avgRunning}} kms.
+      </p>
+    </div>
+
+    <div class="footer">
+      © 2025 Drivesta. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

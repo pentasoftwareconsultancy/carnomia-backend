@@ -32,7 +32,7 @@ router.get("/request-by-engineer/:engineerId", authMiddlewares, getPDIRequestsBy
 router.post("/requests/statuses", authMiddlewares, getPDIRequestsByStatuses);
 router.post("/requests/requests-count", getPDIRequestCountsByStatuses);
 router.get("/customer/recent", authMiddlewares, getRecentRequestByCustomer);
-router.put("/request/:id/payment-status",authMiddlewares, updatePaymentStatus);
+router.put("/request/payment-status/:id",authMiddlewares, updatePaymentStatus);
 
 router.put(
   "/request/updateInspectionById/:id",
