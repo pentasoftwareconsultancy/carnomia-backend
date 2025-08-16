@@ -60,6 +60,7 @@ const requestSchema = new mongoose.Schema(
     engineer_name: { type: String },
     engineer_mobile: { type: String },
     engineer_location: { type: String },
+    engineer_status: { type: Boolean, default: true },
     engineer_assignedSlot: { type: String },
 
     inspection: [inspectionCategorySchema],
