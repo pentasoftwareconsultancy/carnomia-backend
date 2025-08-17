@@ -103,6 +103,23 @@ export const updateInspectionById = async (req, res) => {
   }
 };
 
+export const deleteInspectionById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedInspection = await PDIRequest.findByIdAndDelete(id);
+    if (!deletedInspection) {
+      return res.status(404).json({ message: "Inspection not found" });
+    }
+    res.status(200).json({
+      message: "Inspection deleted successfully",
+      data: deletedInspection
+    });
+  } catch (error) {
+    console.error("Error deleting inspection:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 export const updatePaymentStatus = async (req, res) => {
   try {
     const { id } = req.params; // PDI Request ID
@@ -328,9 +345,6 @@ export const assignEngineer = async (req, res) => {
     if (!engineer) {
       return res.status(404).json({ message: "Engineer not found" });
     }
-
-    console.log('asss eng', engineer)
-
     // Update the PDIRequest by bookingId
     const updatedRequest = await PDIRequest.findOneAndUpdate(
       { _id: requestId },

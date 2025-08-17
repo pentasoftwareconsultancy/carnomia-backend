@@ -5,6 +5,7 @@ import {
   getAllPDIRequests,
   getPDIRequestsByEngineer,
   updateInspectionById,
+  deleteInspectionById,
   getPDIRequestsByStatuses,
   getPDIRequestCountsByStatuses,
   getRecentRequestByCustomer,
@@ -37,6 +38,10 @@ router.put("/request/payment-status/:id",authMiddlewares, updatePaymentStatus);
 router.put(
   "/request/updateInspectionById/:id",
   updateInspectionById
+);
+router.delete(
+  "/request/deleteInspectionById/:id",
+  deleteInspectionById
 );
 router.put("/request/assign", assignEngineer);
 router.get("/PDIRequestwithvehicledata", getSelectedPDIWithVehicleData);
