@@ -108,7 +108,7 @@ export const loginUser = async (req, res) => {
     // Case 1: Admin / Engineer / SuperAdmin login via Email + Password
     if (email && password) {
       // Check allowed domain
-      if (!email.endsWith("@carnomia.com")) {
+      if (!email.endsWith("@drivesta.com")) {
         return res
           .status(400)
           .json({ message: "Please login with mobile number and OTP" });
