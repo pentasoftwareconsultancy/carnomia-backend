@@ -27,9 +27,19 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 //   origin: "http://localhost:5173", // frontend Vite
 //   credentials: true                // if using cookies/sessions
 // }));
+// app.use(cors({
+//   origin: ['http://31.97.231.187:5000', 'http://localhost:5173'], // allow your frontend domains
+//   credentials: true // if you use cookies or authentication headers
+// }));
 app.use(cors({
-  origin: ['http://31.97.231.187:5000', 'http://localhost:5173'], // allow your frontend domains
-  credentials: true // if you use cookies or authentication headers
+  origin: [
+    "http://localhost:5173", 
+    "http://31.97.231.187:5000",    
+    "https://carnomia.com",        
+    "https://www.carnomia.com",   
+    "https://api.carnomia.com"      
+  ],
+  credentials: true
 }));
 
 // Middleware
