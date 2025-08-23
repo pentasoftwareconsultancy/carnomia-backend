@@ -102,7 +102,7 @@ export const updateUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { name, email, password, mobile, otp } = req.body;
 
-  console.log("Login attempt:", { email, mobile, password });
+  // console.log("Login attempt:", { email, mobile, password });
 
   try {
     // Case 1: Admin / Engineer / SuperAdmin login via Email + Password
@@ -125,7 +125,7 @@ export const loginUser = async (req, res) => {
 
       const user = await User.findOne({ email }).select("+password");
 
-      console.log("from login " + user);
+      // console.log("from login " + user);
 
       if (!user) {
         return res.status(404).json({ message: "User not registered" });
@@ -169,7 +169,7 @@ export const loginUser = async (req, res) => {
       return await verifyOtp(req, res)
     }
 
-    console.log("Mobile login attempt:", { mobile });
+    // console.log("Mobile login attempt:", { mobile });
     
     // Case 2: Customer Login via Mobile OTP
     if (mobile) {

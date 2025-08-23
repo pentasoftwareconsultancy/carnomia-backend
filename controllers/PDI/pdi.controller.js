@@ -6,7 +6,7 @@ import VehicleModel from "../../models/Vehicle.model.js";
 
 export const createPDIRequest = async (req, res) => {
   try {
-    const {
+    let {
       brand,
       model,
       variant,
@@ -15,7 +15,17 @@ export const createPDIRequest = async (req, res) => {
       carStatus,
       date,
       notes,
+      customerName,
+      customerMobile
     } = req.body;
+
+    if(req.user.role === 'customer') {
+      customerName = req.user.name;
+      customerMobile = req.user.mobile;
+    } else {
+      customerName = req.body.customerName || req.user.name;
+      customerMobile = req.body.customerMobile || req.user.mobile;
+    }
 
     console.log("Body received:", req.body);
 
@@ -36,8 +46,8 @@ export const createPDIRequest = async (req, res) => {
 
     const newRequest = new PDIRequest({
       customerId: req.user.id,
-      customerName: user.name,
-      customerMobile: user.mobile,
+      customerName: customerName,
+      customerMobile: customerMobile,
 
       brand,
       model,
@@ -267,7 +277,7 @@ export const getPDIRequestCountsByStatuses = async (req, res) => {
     const counts = {
       newRequests: requests.filter(r => r.status === "NEW").length,
       assignedJobs: requests.filter(r => r.status === "ASSIGNED_ENGINEER").length,
-      completedJobs: requests.filter(r => r.status === "COMEPLETED").length,
+      completedJobs: requests.filter(r => r.status === "COMPLETED").length,
       allRequests: requests.length,
       activeEngineers: engineers?.length,
       upcomingSchedule: 0 // Placeholder for future logic

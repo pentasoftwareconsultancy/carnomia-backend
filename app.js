@@ -21,26 +21,32 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Serve static files from /uploads
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+  app.use(
+  "/uploads",
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+  express.static(path.join(__dirname, "uploads")));
 
-// app.use(cors({
-//   origin: "http://localhost:5173", // frontend Vite
-//   credentials: true                // if using cookies/sessions
-// }));
+app.use(cors({
+  origin: "http://localhost:5173", // frontend Vite
+  credentials: true                // if using cookies/sessions
+}));
 // app.use(cors({
 //   origin: ['http://31.97.231.187:5000', 'http://localhost:5173'], // allow your frontend domains
 //   credentials: true // if you use cookies or authentication headers
 // }));
-app.use(cors({
-  origin: [
-    "http://localhost:5173", 
-    "http://31.97.231.187:5000",    
-    "https://carnomia.com",        
-    "https://www.carnomia.com",   
-    "https://api.carnomia.com"      
-  ],
-  credentials: true
-}));
+// app.use(cors({
+//   origin: [
+//     "http://localhost:5173", 
+//     "http://31.97.231.187:5000",    
+//     "https://carnomia.com",        
+//     "https://www.carnomia.com",   
+//     "https://api.carnomia.com"      
+//   ],
+//   credentials: true
+// }));
 
 // Middleware
 app.use(express.json());
