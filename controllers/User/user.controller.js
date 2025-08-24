@@ -58,36 +58,34 @@ export const registerUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, mobile, city, designation, password, role } = req.body;
+    const updates = { ...req.body }; // all fields from request body
 
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    // Check for duplicate email
-    if (email && email !== user.email) {
-      const existingEmail = await User.findOne({ email });
+    // Handle duplicate email
+    if (updates.email && updates.email !== user.email) {
+      const existingEmail = await User.findOne({ email: updates.email });
       if (existingEmail) {
         return res.status(400).json({ success: false, error: "Email already in use" });
       }
     }
 
-    // Update password only if provided and not blank
-    if (role !== "customer" && password && password.trim() !== "") {
-      user.password = await bcrypt.hash(password, 10);
+    // Hash password if provided
+    if (updates.password && updates.password.trim() !== "" && updates.role !== "customer") {
+      updates.password = await bcrypt.hash(updates.password, 10);
+    } else {
+      delete updates.password; // don't update if blank
     }
 
-    // Update other fields
-    user.name = name || user.name;
-    user.email = email || user.email;
-    user.mobile = mobile || user.mobile;
-    user.city = city || user.city;
-    user.designation = designation || user.designation;
-    user.role = role || user.role;
+    // Merge updates into user document
+    Object.keys(updates).forEach(key => {
+      user[key] = updates[key]; // assign existing fields or add new fields dynamically
+    });
 
     await user.save();
-
     res.status(200).json({
       success: true,
       message: `${user.role} updated successfully`,

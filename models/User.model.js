@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema(
       enum: ["engineer", "admin", "superadmin", "customer"],
       default: "customer",
     },
+    user_status: {
+      type: String,
+      select: false,
+    },
     otp: {
       type: String,
       default: null,
