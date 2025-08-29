@@ -103,10 +103,10 @@ const app = express();
 // Allowed frontend domains
 const frontendOrigins = [
   "http://localhost:5173",
-  // "http://31.97.231.187:5000",
-  // "https://carnomia.com",
-  // "https://www.carnomia.com",
-  // "https://api.carnomia.com"
+  "http://31.97.231.187:5000",
+  "https://carnomia.com",
+  "https://www.carnomia.com",
+  "https://api.carnomia.com"
 ];
 
 // Global CORS for API routes
