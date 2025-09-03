@@ -160,12 +160,15 @@ import commonRoutes from "./routes/meta/common.routes.js";
 import metaRoutes from "./routes/meta/meta.routes.js";
 import lookupRoutes from "./routes/meta/lookup.routes.js";
 import pdfRoutes from "./routes/pdf/pdf.routes.js";
+// import bcrypt from "bcryptjs";
 
 // --------- ESM dirname setup --------- //
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+// console.log("My Pass : ",await bcrypt.hash('Admin@123!!', 10));
 
 // ---------------- Security Middleware ---------------- //
 app.use(helmet()); // Secure HTTP headers

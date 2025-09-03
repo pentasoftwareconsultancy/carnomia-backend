@@ -104,7 +104,8 @@ router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
     }
 
     const uploadedFiles = req.files.map((file) => {
-      const fileUrl = `${baseUrl}/uploads/${file.filename}`;
+      // const fileUrl = `${baseUrl}/uploads/${file.filename}`;
+      const fileUrl = `https://api.carnomia.com/uploads/${file.filename}`;
       return {
         fileName: file.originalname,
         fileUrl,
