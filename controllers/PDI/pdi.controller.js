@@ -241,7 +241,7 @@ export const getPDIRequestsByStatuses = async (req, res) => {
 
     let requests = [];
     if(req.user.role === 'customer') {
-      console.log("Customer ID:", req.user.id);
+      // console.log("Customer ID:", req.user.id);
       requests = await PDIRequest.find({
         status: { $in: statuses},
         customerId: req.user.id
