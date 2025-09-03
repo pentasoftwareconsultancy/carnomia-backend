@@ -168,6 +168,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+app.set("trust proxy", true);
+
 // console.log("My Pass : ",await bcrypt.hash('Admin@123!!', 10));
 
 // ---------------- Security Middleware ---------------- //
