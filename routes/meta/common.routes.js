@@ -99,9 +99,6 @@ router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
   try {
     const documentType = req.body.documentType || "general";
 
-    // ✅ Always use production base URL
-    const baseUrl = "https://api.carnomia.com";
-
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         status: "error",
@@ -110,10 +107,9 @@ router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
     }
 
     const uploadedFiles = req.files.map((file) => {
-      const fileUrl = `${baseUrl}/uploads/${file.filename}`;
       return {
         fileName: file.originalname,
-        fileUrl,
+        fileUrl: `https://api.carnomia.com/uploads/${file.filename}`, // force https here
         documentType,
       };
     });
