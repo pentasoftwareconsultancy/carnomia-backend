@@ -55,17 +55,53 @@ import {
 const router = express.Router();
 
 // Upload image route
+// router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
+//   try {
+//     const documentType = req.body.documentType || "general";
+
+//     // ✅ Detect HTTPS properly
+//     const baseUrl =
+//       process.env.NODE_ENV === "production"
+//         ? "https://api.carnomia.com"
+//         : `${req.protocol}://${req.get("host")}`;
+
+//     // ✅ Check for no files
+//     if (!req.files || req.files.length === 0) {
+//       return res.status(400).json({
+//         status: "error",
+//         message: "No files uploaded",
+//       });
+//     }
+
+//     const uploadedFiles = req.files.map((file) => {
+//       const fileUrl = `${baseUrl}/uploads/${file.filename}`;
+//       return {
+//         fileName: file.originalname,
+//         fileUrl,
+//         documentType,
+//       };
+//     });
+
+//     res.json({
+//       status: "success",
+//       message: "Documents uploaded successfully",
+//       files: uploadedFiles,
+//     });
+//   } catch (err) {
+//     console.error("Upload error:", err);
+//     res.status(500).json({
+//       status: "error",
+//       message: "Document upload failed",
+//     });
+//   }
+// });
 router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
   try {
     const documentType = req.body.documentType || "general";
 
-    // ✅ Detect HTTPS properly
-    const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? "https://api.carnomia.com"
-        : `${req.protocol}://${req.get("host")}`;
+    // ✅ Always use production base URL
+    const baseUrl = "https://api.carnomia.com";
 
-    // ✅ Check for no files
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         status: "error",
