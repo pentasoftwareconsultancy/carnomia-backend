@@ -43,6 +43,7 @@
 
 // export default router;
 
+
 import express from "express";
 import {
   deleteMetaData,
@@ -54,27 +55,17 @@ import {
 
 const router = express.Router();
 
-// Upload image route
+// // Upload image route
+
 // router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
 //   try {
 //     const documentType = req.body.documentType || "general";
-
-//     // ✅ Detect HTTPS properly
-//     const baseUrl =
-//       process.env.NODE_ENV === "production"
-//         ? "https://api.carnomia.com"
-//         : `${req.protocol}://${req.get("host")}`;
-
-//     // ✅ Check for no files
-//     if (!req.files || req.files.length === 0) {
-//       return res.status(400).json({
-//         status: "error",
-//         message: "No files uploaded",
-//       });
-//     }
+//     const baseUrl = `${req.protocol}://${req.get("host")}`;
 
 //     const uploadedFiles = req.files.map((file) => {
+//       // ✅ Correct file URL (assuming uploads are served via express.static)
 //       const fileUrl = `${baseUrl}/uploads/${file.filename}`;
+
 //       return {
 //         fileName: file.originalname,
 //         fileUrl,
@@ -95,9 +86,16 @@ const router = express.Router();
 //     });
 //   }
 // });
+
 router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
   try {
     const documentType = req.body.documentType || "general";
+
+    // Detect HTTPS in production
+    const baseUrl =
+      process.env.NODE_ENV === "production"
+        ? "https://api.carnomia.com"
+        : `${req.protocol}://${req.get("host")}`;
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
@@ -107,9 +105,10 @@ router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
     }
 
     const uploadedFiles = req.files.map((file) => {
+      const fileUrl = `${baseUrl}/uploads/${file.filename}`;
       return {
         fileName: file.originalname,
-        fileUrl: `https://api.carnomia.com/uploads/${file.filename}`, // force https here
+        fileUrl,
         documentType,
       };
     });
