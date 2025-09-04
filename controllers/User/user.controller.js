@@ -476,7 +476,7 @@ export const getusers = async (req, res) => {
 export const getUsersByRoles = async (req, res) => {
   try {
     const { role } = req.params;
-    const users = await User.find({ role});
+    const users = await User.find({ role });
         
 
     if (!users || users.length === 0) {
