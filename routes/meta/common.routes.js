@@ -95,7 +95,8 @@ router.post("/upload", uploadDocument.array("documents", 100), (req, res) => {
     const baseUrl =
       process.env.NODE_ENV === "production"
         ? "https://api.carnomia.com"
-        : `${req.protocol}://${req.get("host")}`;
+        // : `${req.protocol}://${req.get("host")}`;
+        : `https://${req.get("host")}`;
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
