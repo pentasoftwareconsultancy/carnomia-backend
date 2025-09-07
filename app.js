@@ -179,7 +179,7 @@ app.use(helmet()); // Secure HTTP headers
 // Allowed frontend domains
 const frontendOrigins = [
   "http://localhost:5173",
-  "http://192.168.1.111:5173",
+  // "http://192.168.1.111:5173",
   "https://api.carnomia.com",
   "http://31.97.231.187:5000",
   "https://carnomia.com",

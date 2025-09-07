@@ -4,9 +4,88 @@ import User from "../../models/User.model.js";
 import Vehicle from "../../models/Vehicle.model.js";
 import VehicleModel from "../../models/Vehicle.model.js";
 
+// export const createPDIRequest = async (req, res) => {
+//   try {
+//     let {
+//       brand,
+//       model,
+//       variant,
+//       dealerName,
+//       address,
+//       carStatus,
+//       date,
+//       notes,
+//       customerName,
+//       customerMobile
+//     } = req.body;
+
+//     if(req.user.role === 'customer') {
+//       customerName = req.user.name;
+//       customerMobile = req.user.mobile;
+//     } else {
+//       customerName = req.body.customerName || req.user.name;
+//       customerMobile = req.body.customerMobile || req.user.mobile;
+//     }
+
+//     console.log("Body received:", req.body);
+
+//     const user = await User.findById(req.user.id);
+
+//     console.log("user from id ", user);
+//     if (!user) return res.status(404).json({ error: "Customer not found" });
+
+//     const vehicle = await Vehicle.findOne({ brand, model, variant });
+//     if (!vehicle) {
+//       return res
+//         .status(404)
+//         .json({ message: "Vehicle not found for this customer" });
+//     }
+
+//     // Generate booking ID
+//     const bookingId = await getCityPrefix();
+
+//     const newRequest = new PDIRequest({
+//       customerId: req.user.id,
+//       customerName: customerName,
+//       customerMobile: customerMobile,
+
+//       brand,
+//       model,
+//       variant,
+
+//       imageUrl: vehicle.imageUrl,
+//       transmissionType: vehicle.transmissionType,
+//       fuelType: vehicle.fuelType,
+
+//       dealerName,
+//       address,
+//       carStatus,
+//       status: "NEW",
+//       date,
+//       notes,
+//       bookingId,
+//       paymentStatus: "UNPAID",
+//       paymentMode: "N/A",
+//       amount: 2500
+//     });
+//     await newRequest.save();
+
+//     res.status(201).json({
+//       message: "PDI Request created successfully",
+//       request: newRequest,
+//       vehicleImage: vehicle.imageUrl,
+//     });
+//   } catch (error) {
+//     console.error("Create request error:", error.message, error.stack);
+//     res
+//       .status(500)
+//       .json({ message: "Something went wrong", error: error.message });
+//   }
+// };
+
 export const createPDIRequest = async (req, res) => {
   try {
-    let {
+    const {
       brand,
       model,
       variant,
@@ -15,25 +94,25 @@ export const createPDIRequest = async (req, res) => {
       carStatus,
       date,
       notes,
-      customerName,
-      customerMobile
+      customerName: bodyCustomerName,
+      customerMobile: bodyCustomerMobile,
     } = req.body;
 
-    if(req.user.role === 'customer') {
-      customerName = req.user.name;
-      customerMobile = req.user.mobile;
-    } else {
-      customerName = req.body.customerName || req.user.name;
-      customerMobile = req.body.customerMobile || req.user.mobile;
-    }
-
-    console.log("Body received:", req.body);
-
+    // Get logged-in user
     const user = await User.findById(req.user.id);
-
-    console.log("user from id ", user);
     if (!user) return res.status(404).json({ error: "Customer not found" });
 
+    // Determine customer info
+    let customerName = user.name;
+    let customerMobile = user.mobile;
+
+    // If admin is submitting, override with provided data
+    if (req.user.role !== "customer") {
+      customerName = bodyCustomerName || user.name;
+      customerMobile = bodyCustomerMobile || user.mobile;
+    }
+
+    // Find vehicle
     const vehicle = await Vehicle.findOne({ brand, model, variant });
     if (!vehicle) {
       return res
@@ -44,19 +123,17 @@ export const createPDIRequest = async (req, res) => {
     // Generate booking ID
     const bookingId = await getCityPrefix();
 
+    // Create PDI request
     const newRequest = new PDIRequest({
       customerId: req.user.id,
-      customerName: customerName,
-      customerMobile: customerMobile,
-
+      customerName,
+      customerMobile,
       brand,
       model,
       variant,
-
       imageUrl: vehicle.imageUrl,
       transmissionType: vehicle.transmissionType,
       fuelType: vehicle.fuelType,
-
       dealerName,
       address,
       carStatus,
@@ -66,8 +143,9 @@ export const createPDIRequest = async (req, res) => {
       bookingId,
       paymentStatus: "UNPAID",
       paymentMode: "N/A",
-      amount: 2500
+      amount: 2500,
     });
+
     await newRequest.save();
 
     res.status(201).json({
