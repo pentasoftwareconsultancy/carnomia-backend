@@ -388,63 +388,63 @@ export const loginUser = async (req, res) => {
 };
 
 
-export const verifyOtp = async (req, res) => {
+// export const verifyOtp = async (req, res) => {
     
-  return new Promise(async (resolved,reject)=>{
+//   return new Promise(async (resolved,reject)=>{
         
-      const { mobile, otp } = req.body;
+//       const { mobile, otp } = req.body;
 
-      console.log("Verify OTP request:", { mobile, otp });
+//       console.log("Verify OTP request:", { mobile, otp });
 
-      try {
-      let user;
+//       try {
+//       let user;
 
-      if (mobile.includes("@")) {
-        user = await User.findOne({ email: mobile });
-      } else {
-        user = await User.findOne({ mobile: mobile });
-      }
+//       if (mobile.includes("@")) {
+//         user = await User.findOne({ email: mobile });
+//       } else {
+//         user = await User.findOne({ mobile: mobile });
+//       }
 
-      console.log("user found:", user);
+//       console.log("user found:", user);
 
-      if (!user) return res.status(404).json({ message: "User not found" });
+//       if (!user) return res.status(404).json({ message: "User not found" });
 
-      if (!user.otp || user.otp !== otp)
-        resolved(res.status(400).json({ message: "Invalid OTP" }));
+//       if (!user.otp || user.otp !== otp)
+//         resolved(res.status(400).json({ message: "Invalid OTP" }));
 
-      if (!user.otpExpires || user.otpExpires < new Date())
-        resolved(res.status(400).json({ message: "OTP expired" }));
+//       if (!user.otpExpires || user.otpExpires < new Date())
+//         resolved(res.status(400).json({ message: "OTP expired" }));
 
-      // Clear OTP
-      user.otp = null;
-      user.otpExpires = null;
-      await user.save();
+//       // Clear OTP
+//       user.otp = null;
+//       user.otpExpires = null;
+//       await user.save();
 
-      const token = generateToken(user);
+//       const token = generateToken(user);
 
-      res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-      });
+//       res.cookie("token", token, {
+//         httpOnly: true,
+//         maxAge: 24 * 60 * 60 * 1000,
+//       });
 
-      resolved(res.status(200).json({
-        message: "OTP verified successfully",
-        token,
-        user: {
-          userId: user._id,
-          email: user.email || null,
-          name: user.name || null,   
-          mobile: user.mobile,
-          role: user.role,
-        },
-      }));
-      } catch (err) {
-      console.error("Verify OTP error:", err);
-        resolved(res.status(500).json({ message: "Server error" }));
-      }
+//       resolved(res.status(200).json({
+//         message: "OTP verified successfully",
+//         token,
+//         user: {
+//           userId: user._id,
+//           email: user.email || null,
+//           name: user.name || null,   
+//           mobile: user.mobile,
+//           role: user.role,
+//         },
+//       }));
+//       } catch (err) {
+//       console.error("Verify OTP error:", err);
+//         resolved(res.status(500).json({ message: "Server error" }));
+//       }
       
-    })
-  };
+//     })
+//   };
 
 export const logoutUser = (req, res) => {
   try {
