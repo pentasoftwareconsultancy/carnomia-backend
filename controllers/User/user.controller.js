@@ -286,8 +286,7 @@ export const loginUser = async (req, res) => {
   try {
     // Case 1: Login with Email + Password
     if (email && password) {
-      //const displayName = user?.name || user?.email?.split("@")[0] || user?.mobile || "User";
-
+      
       const user = await User.findOne({ email }).select("+password");
       if (!user) {
         return res.status(404).json({ message: "User not registered" });
