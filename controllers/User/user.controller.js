@@ -129,19 +129,25 @@ export const updateUser = async (req, res) => {
     if (updates.email && updates.email !== user.email) {
       const existingEmail = await User.findOne({ email: updates.email });
       if (existingEmail) {
-        return res.status(400).json({ success: false, error: "Email already in use" });
+        return res
+          .status(400)
+          .json({ success: false, error: "Email already in use" });
       }
     }
 
     // Hash password if provided
-    if (updates.password && updates.password.trim() !== "" && updates.role !== "customer") {
+    if (
+      updates.password &&
+      updates.password.trim() !== "" &&
+      updates.role !== "customer"
+    ) {
       updates.password = await bcrypt.hash(updates.password, 10);
     } else {
       delete updates.password; // don't update if blank
     }
 
     // Merge updates into user document
-    Object.keys(updates).forEach(key => {
+    Object.keys(updates).forEach((key) => {
       user[key] = updates[key]; // assign existing fields or add new fields dynamically
     });
 
@@ -153,7 +159,9 @@ export const updateUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Update error:", error);
-    res.status(500).json({ success: false, error: "Server error", detail: error.message });
+    res
+      .status(500)
+      .json({ success: false, error: "Server error", detail: error.message });
   }
 };
 
@@ -221,14 +229,14 @@ export const updateUser = async (req, res) => {
 //       });
 //     }
 
-//     // verify OTP 
+//     // verify OTP
 //     if(otp) {
 //       console.log(otp)
 //       return await verifyOtp(req, res)
 //     }
 
 //     // console.log("Mobile login attempt:", { mobile });
-    
+
 //     // Case 2: Customer Login via Mobile OTP
 //     if (mobile) {
 //       if (!/^\d{10}$/.test(mobile)) {
@@ -286,7 +294,6 @@ export const loginUser = async (req, res) => {
   try {
     // Case 1: Login with Email + Password
     if (email && password) {
-      
       const user = await User.findOne({ email }).select("+password");
       if (!user) {
         return res.status(404).json({ message: "User not registered" });
@@ -304,7 +311,8 @@ export const loginUser = async (req, res) => {
         !email.endsWith("@carnomia.com")
       ) {
         return res.status(400).json({
-          message: "Admins/Engineers/SuperAdmins must login with carnomia.com email",
+          message:
+            "Admins/Engineers/SuperAdmins must login with carnomia.com email",
         });
       }
 
@@ -335,21 +343,12 @@ export const loginUser = async (req, res) => {
 
     // Case 2: Login with Mobile + Password
     if (mobile && password) {
-      if (!/^\d{10}$/.test(mobile)) {
-        return res.status(400).json({ message: "Invalid mobile number" });
-      }
+      const user = await User.findOne({ mobile }).select(
+        "+password name email mobile role"
+      );
 
-      const user = await User.findOne({ mobile }).select("+password");
       if (!user) {
         return res.status(404).json({ message: "User not registered" });
-      }
-
-      console.log("Logged In User: ", user);
-
-      if (!user.password) {
-        return res
-          .status(400)
-          .json({ message: "This account has no password set" });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -357,7 +356,7 @@ export const loginUser = async (req, res) => {
         return res.status(401).json({ message: "Incorrect password" });
       }
 
-      const token = generateToken(user);
+      const token = generateToken(user._id);
 
       res.cookie("token", token, {
         httpOnly: true,
@@ -369,9 +368,9 @@ export const loginUser = async (req, res) => {
         token,
         user: {
           userId: user._id,
+          name: user.name || "Guest", // ✅ fallback
+          email: user.email || "",
           mobile: user.mobile,
-          name: user.name,
-          email: user.email || null,
           role: user.role,
         },
       });
@@ -390,11 +389,10 @@ export const loginUser = async (req, res) => {
   }
 };
 
-
 // export const verifyOtp = async (req, res) => {
-    
+
 //   return new Promise(async (resolved,reject)=>{
-        
+
 //       const { mobile, otp } = req.body;
 
 //       console.log("Verify OTP request:", { mobile, otp });
@@ -436,7 +434,7 @@ export const loginUser = async (req, res) => {
 //         user: {
 //           userId: user._id,
 //           email: user.email || null,
-//           name: user.name || null,   
+//           name: user.name || null,
 //           mobile: user.mobile,
 //           role: user.role,
 //         },
@@ -445,7 +443,7 @@ export const loginUser = async (req, res) => {
 //       console.error("Verify OTP error:", err);
 //         resolved(res.status(500).json({ message: "Server error" }));
 //       }
-      
+
 //     })
 //   };
 
@@ -476,22 +474,23 @@ export const getusers = async (req, res) => {
   }
 };
 
-
 export const getUsersByRoles = async (req, res) => {
   try {
     const { role } = req.params;
     const users = await User.find({ role });
-        
 
     if (!users || users.length === 0) {
-      return res.status(404).json({ success: false, message: "No users found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "No users found" });
     }
     res.status(200).json(users);
   } catch (error) {
     console.error("Get users by role error:", error);
-    res.status(500).json({ success: false, message: "Server error", detail: error.message });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", detail: error.message });
   }
-
 };
 
 //delete user
