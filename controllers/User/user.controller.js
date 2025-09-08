@@ -433,6 +433,7 @@ export const verifyOtp = async (req, res) => {
         user: {
           userId: user._id,
           email: user.email || null,
+          name: user.name || null,   
           mobile: user.mobile,
           role: user.role,
         },
