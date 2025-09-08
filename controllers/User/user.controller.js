@@ -105,7 +105,7 @@ export const registerUser = async (req, res) => {
     });
 
     const user = await newUser.save();
-    // console.log("User registered:", user);
+    console.log("User registered:", user);
     res
       .status(201)
       .json({ id: user._id, message: `${role} registered successfully` });
@@ -281,7 +281,7 @@ export const updateUser = async (req, res) => {
 // };
 
 export const loginUser = async (req, res) => {
-  const { email, password, mobile } = req.body;
+  const { name, email, password, mobile } = req.body;
 
   try {
     // Case 1: Login with Email + Password
@@ -344,6 +344,8 @@ export const loginUser = async (req, res) => {
       if (!user) {
         return res.status(404).json({ message: "User not registered" });
       }
+
+      console.log("Logged In User: ", user);
 
       if (!user.password) {
         return res
