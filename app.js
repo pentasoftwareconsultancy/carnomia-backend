@@ -183,6 +183,7 @@ const frontendOrigins = [
   "http://31.97.231.187:5000",
   "https://carnomia.com",
   "https://www.carnomia.com",
+  "https://carnomia-backend.onrender.com"
 ];
 
 // Global CORS for API routes
